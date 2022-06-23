@@ -1,0 +1,6 @@
+name: 'Trigger rebuilds'
+description: 'Triggers retries and rebuilds of R packages'
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/r-universe-org/rebuilds'
+
