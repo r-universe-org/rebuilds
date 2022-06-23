@@ -8,7 +8,6 @@ trigger_all_rebuilds <- function(cycle = 30){
   files <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?fields=_builder.url'))
   files$age <- as.numeric(Sys.Date() - as.Date(files$published))
   sources <- subset(files, files$type == 'src')
-  sources$published <- as.Date(sources$published)
   regex <- paste0("^", substring(getRversion(), 1, 3))
   win_bins <- subset(files, files$type == 'win' & grepl(regex, files$r))
   mac_bins <- subset(files, files$type == 'mac' & grepl(regex, files$r))
@@ -23,8 +22,8 @@ trigger_all_rebuilds <- function(cycle = 30){
   retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
   lapply(retry_urls, retry_run)
 
-  # Full rebuilds (not retries)
-  rebuilds <- subset(sources, (sources$age > 0) & (sources$age %% cycle == 0))
+  # Monthly full rebuilds (not just retries)
+  rebuilds <- subset(files, (files$type %in% c('src', 'failure')) & (files$age > 0) & (files$age %% cycle == 0))
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
   }
