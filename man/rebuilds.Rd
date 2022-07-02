@@ -26,7 +26,7 @@
 trigger_rebuilds(
   repository = "r-universe/jeroen",
   workflow = "build.yml",
-  days = 30
+  days = 90
 )
 
 rebuild_failures(universe = NULL)

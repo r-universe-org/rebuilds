@@ -3,27 +3,24 @@
 #' Invoke retries and full rebuilds for all the packages.
 #'
 #' @export
-#' @param cycle number of days to rebuild things
-trigger_all_rebuilds <- function(cycle = 30){
-  files <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?fields=_builder.url'))
+#' @param retry_days number of days to retry failures builds
+#' @param rebuild_days number of days after which to do a full fresh rebuild
+trigger_all_rebuilds <- function(retry_days = 5, rebuild_days = 30){
+  files <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?fields=OS_type,_builder.url,_builder.winbinary,_builder.macbinary'))
   files$age <- as.numeric(Sys.Date() - as.Date(files$published))
-  sources <- subset(files, files$type == 'src')
-  regex <- paste0("^", substring(getRversion(), 1, 3))
-  win_bins <- subset(files, files$type == 'win' & grepl(regex, files$r))
-  mac_bins <- subset(files, files$type == 'mac' & grepl(regex, files$r))
-  missing_win <- is.na(match(paste(sources$package, sources$version), paste(win_bins$package, win_bins$version)))
-  missing_mac <- is.na(match(paste(sources$package, sources$version), paste(mac_bins$package, mac_bins$version)))
-  retries <- sources[missing_win | missing_mac,]
-  retries <- subset(retries, retries$age < 30)
-  failures <- subset(files, files$type == 'failure')
-  failures <- subset(failures, failures$age < 30)
-
-  # Retry existing builds
+  failures <- subset(files, type == 'failure' & age < retry_days)
+  sources <- subset(files, type == 'src' & age < retry_days)
+  sources$OS_type[is.na(sources$OS_type)] <- ""
+  sources$winfail <- sources[["_builder"]]$winbinary != 'success' & sources$OS_type != 'unix'
+  sources$macfail <- sources[["_builder"]]$macbinary != 'success' & sources$OS_type != 'windows'
+  retries <- subset(sources, winfail | macfail)
   retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
-  lapply(retry_urls, retry_run)
 
-  # Monthly full rebuilds (not just retries)
-  rebuilds <- subset(files, (files$type %in% c('src', 'failure')) & (files$age > 0) & (files$age %% cycle == 0))
+  # Retry failures only, set max_age to check against date of first run attempt
+  lapply(retry_urls, retry_run, max_age = retry_days)
+
+  # Fresh full rebuilds (not just retries)
+  rebuilds <- subset(files, (type %in% c('src', 'failure')) & (age > 0) & (age %% rebuild_days == 0))
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
   }
