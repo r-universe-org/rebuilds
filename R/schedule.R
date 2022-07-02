@@ -11,8 +11,9 @@ trigger_all_rebuilds <- function(retry_days = 5, rebuild_days = 30){
   failures <- subset(files, type == 'failure' & age < retry_days)
   sources <- subset(files, type == 'src' & age < retry_days)
   sources$OS_type[is.na(sources$OS_type)] <- ""
-  sources$winfail <- sources[["_builder"]]$winbinary != 'success' & sources$OS_type != 'unix'
-  sources$macfail <- sources[["_builder"]]$macbinary != 'success' & sources$OS_type != 'windows'
+  failtypes <- c("none", "cancelled") # do not retry for check failures right now.
+  sources$winfail <- sources[["_builder"]]$winbinary %in% failtypes & sources$OS_type != 'unix'
+  sources$macfail <- sources[["_builder"]]$macbinary %in% failtypes & sources$OS_type != 'windows'
   retries <- subset(sources, winfail | macfail)
   retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
 
