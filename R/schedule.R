@@ -24,6 +24,10 @@ trigger_all_rebuilds <- function(retry_days = 5, rebuild_days = 30){
   rebuilds <- subset(files, (type %in% c('src', 'failure')) & (age > 0) & (age %% rebuild_days == 0))
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
+    if(i %% 100 == 0) {
+      print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
+      Sys.sleep(900)
+    }
   }
 }
 
