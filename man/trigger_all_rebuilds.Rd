@@ -4,7 +4,7 @@
 \alias{trigger_all_rebuilds}
 \title{Trigger rebuilds}
 \usage{
-trigger_all_rebuilds(retry_days = 5, rebuild_days = 30)
+trigger_all_rebuilds(retry_days = 3, rebuild_days = 30)
 }
 \arguments{
 \item{retry_days}{number of days to retry failures builds}

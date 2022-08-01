@@ -5,7 +5,7 @@
 #' @export
 #' @param retry_days number of days to retry failures builds
 #' @param rebuild_days number of days after which to do a full fresh rebuild
-trigger_all_rebuilds <- function(retry_days = 5, rebuild_days = 30){
+trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   files <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?fields=OS_type,_builder.url,_builder.winbinary,_builder.macbinary'))
   files$age <- as.numeric(Sys.Date() - as.Date(files$published))
   failures <- subset(files, type == 'failure' & age < retry_days)
@@ -24,7 +24,7 @@ trigger_all_rebuilds <- function(retry_days = 5, rebuild_days = 30){
   rebuilds <- subset(files, (type %in% c('src', 'failure')) & (age > 0) & (age %% rebuild_days == 0))
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
-    if(i %% 100 == 0) {
+    if(i %% 50 == 0) {
       print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
       Sys.sleep(900)
     }
