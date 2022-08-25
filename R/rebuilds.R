@@ -112,9 +112,9 @@ rebuild_bioc_packages <- function(){
   df <- read.csv('https://r-universe-org.github.io/cran-to-git/crantogit.csv', stringsAsFactors = FALSE)
   df <- df[df$registry == 'bioc',]
   df$user <- basename(dirname(df$url))
-  for(i in seq_len(nrow(df))){
+  for(i in 37:nrow(df)){
     cat(sprintf('[%d] %s/%s\n', i, df$user[i], df$package[i]))
-    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
+    try(rebuild_one(paste0('r-universe/', df$user[i]), df$package[i]))
     if(i %% 50 == 0) {
       print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
       Sys.sleep(900)
