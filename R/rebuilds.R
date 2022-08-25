@@ -108,6 +108,22 @@ rebuild_failed_vignettes <- function(universe = NULL){
 
 #' @export
 #' @rdname rebuilds
+rebuild_bioc_packages <- function(){
+  df <- read.csv('https://r-universe-org.github.io/cran-to-git/crantogit.csv')
+  df <- df[df$registry == 'bioc',]
+  df$user <- basename(dirname(df$url))
+  for(i in seq_len(nrow(df))){
+    cat(sprintf('[%d] %s/%s\n', i, df$user[i], df$package[i]))
+    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
+    if(i %% 50 == 0) {
+      print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
+      Sys.sleep(900)
+    }
+  }
+}
+
+#' @export
+#' @rdname rebuilds
 rebuild_all_oldies <- function(before = '2022-04-01'){
   rebuild_oldies(universe = NULL, before = before)
 }

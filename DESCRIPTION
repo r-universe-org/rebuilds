@@ -13,4 +13,4 @@ Imports:
     gert (>= 1.2.0),
     gh,
     jsonlite
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1

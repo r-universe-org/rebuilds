@@ -7,6 +7,7 @@
 \alias{list_all_packages}
 \alias{rebuild_oldies}
 \alias{rebuild_failed_vignettes}
+\alias{rebuild_bioc_packages}
 \alias{rebuild_all_oldies}
 \alias{rebuild_missing_binaries}
 \alias{rebuild_missing_sources}
@@ -38,6 +39,8 @@ list_all_packages(fields = "_builder.upstream", type = "src")
 rebuild_oldies(universe, before = "2022-05-10", type = "src")
 
 rebuild_failed_vignettes(universe = NULL)
+
+rebuild_bioc_packages()
 
 rebuild_all_oldies(before = "2022-04-01")
 
