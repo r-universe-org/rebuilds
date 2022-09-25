@@ -12,6 +12,5 @@ Imports:
     curl,
     gert (>= 1.2.0),
     gh,
-    jsonlite,
-    rlang
+    jsonlite
 RoxygenNote: 7.2.1
