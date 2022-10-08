@@ -21,7 +21,14 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   lapply(retry_urls, retry_run, max_age = retry_days)
 
   # Fresh full rebuilds (not just retries)
-  rebuilds <- subset(files, (type %in% c('src', 'failure')) & (age > 0) & (age %% rebuild_days == 0))
+  builds <- subset(files, (type %in% c('src', 'failure')))
+  do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
+  need_more <- round(length(do_rebuild) / rebuild_days) - sum(do_rebuild)
+  if(need_more > 0){
+    # Randomly select some extra to get to 1/30th of the total
+    do_rebuild[sample(which(!do_rebuild), need_more)] <- TRUE
+  }
+  rebuilds <- builds[do_rebuild,]
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
     if(i %% 50 == 0) {
