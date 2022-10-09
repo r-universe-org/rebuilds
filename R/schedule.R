@@ -23,7 +23,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   # Fresh full rebuilds (not just retries)
   builds <- subset(files, (type %in% c('src', 'failure')))
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
-  min_rebuilds <- round(length(do_rebuild) / rebuild_days) # maybe this is too much
+  min_rebuilds <- round(length(do_rebuild) / rebuild_days) - 100
   need_more <-  min_rebuilds - sum(do_rebuild)
   if(need_more > 0){
     # Select some extra to get to 1/30th of the total, mostly try to relieve the busy days
