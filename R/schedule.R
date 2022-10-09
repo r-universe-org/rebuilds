@@ -25,8 +25,10 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
   need_more <- round(length(do_rebuild) / rebuild_days) - sum(do_rebuild)
   if(need_more > 0){
-    # Randomly select some extra to get to 1/30th of the total
-    do_rebuild[sample(which(!do_rebuild), need_more)] <- TRUE
+    # Select some extra to get to 1/30th of the total, mostly try to relieve the busy days
+    group <- as.character(builds$age)
+    weights <- unname(table(group)[group])
+    do_rebuild[sample(which(!do_rebuild), need_more, prob = weights)] <- TRUE
   }
   rebuilds <- builds[do_rebuild,]
   for(i in seq_len(nrow(rebuilds))){
