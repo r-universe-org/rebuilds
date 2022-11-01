@@ -27,9 +27,8 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   min_rebuilds <- round(length(do_rebuild) / rebuild_days) - 100
   need_more <-  min_rebuilds - sum(do_rebuild)
   if(need_more > 0){
-    # Select some extra to get to 1/30th of the total, mostly try to relieve the busy days
-    group <- as.character(builds$age)
-    weights <- unname(table(group)[group])
+    # Select some extra to get to 1/30th of the total to relieve the busy days
+    weights <- get_oversize(as.character(builds$age), min_rebuilds)
     candidates <- which(!do_rebuild)
     do_rebuild[sample(candidates, need_more, prob = weights[candidates])] <- TRUE
   }
@@ -48,6 +47,12 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
       Sys.sleep(900)
     }
   }
+}
+
+get_oversize <- function(x, target){
+  oversize <- unname(table(x)[x]) - target
+  oversize[oversize < 0] <- 0
+  oversize
 }
 
 # max_age below refers to the date of the 1st attempt of this run. The 'published' field
