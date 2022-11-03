@@ -24,11 +24,12 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   # Fresh full rebuilds (not just retries)
   builds <- subset(files, (type %in% c('src', 'failure')))
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
-  min_rebuilds <- round(length(do_rebuild) / rebuild_days) - 100
+  average_size <- round(length(do_rebuild) / rebuild_days)
+  min_rebuilds <- average_size - 100
   need_more <-  min_rebuilds - sum(do_rebuild)
   if(need_more > 0){
     # Select some extra to get to 1/30th of the total to relieve the busy days
-    weights <- get_oversize(as.character(builds$age), min_rebuilds)
+    weights <- get_oversize(as.character(builds$age), average_size)
     candidates <- which(!do_rebuild)
     do_rebuild[sample(candidates, need_more, prob = weights[candidates])] <- TRUE
   }
