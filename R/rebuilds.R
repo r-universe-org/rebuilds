@@ -259,15 +259,15 @@ delete_all_old_binaries <- function(){
 
 delete_old_binaries <- function(universe){
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
-  macos <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/contrib/4.0')), verbose = FALSE)
+  macos <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/contrib/4.1')), verbose = FALSE)
   for(i in seq_len(nrow(macos))){
     x <- as.list(macos[i,])
-    delete_one(universe, x$Package, x$Version, 'mac', '4.0')
+    delete_one(universe, x$Package, x$Version, 'mac', '4.1')
   }
-  windows <- jsonlite::stream_in(url(paste0(endpoint, '/bin/windows/contrib/4.0')), verbose = FALSE)
+  windows <- jsonlite::stream_in(url(paste0(endpoint, '/bin/windows/contrib/4.1')), verbose = FALSE)
   for(i in seq_len(nrow(windows))){
     x <- as.list(windows[i,])
-    delete_one(universe, x$Package, x$Version, 'win', '4.0')
+    delete_one(universe, x$Package, x$Version, 'win', '4.1')
   }
 }
 
