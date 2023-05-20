@@ -18,6 +18,7 @@
 \alias{cancel_all_queued_builds}
 \alias{delete_one}
 \alias{delete_all_old_binaries}
+\alias{delete_all_old_binaries_fast}
 \alias{rebuild_all_remotes}
 \alias{rebuild_universe_remotes_only}
 \alias{remove_packages_with_remotes}
@@ -61,6 +62,8 @@ cancel_all_queued_builds()
 delete_one(universe, pkg, version = "all", type = "all", build = "all")
 
 delete_all_old_binaries()
+
+delete_all_old_binaries_fast()
 
 rebuild_all_remotes()
 

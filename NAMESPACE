@@ -3,6 +3,7 @@
 export(cancel_all_queued_builds)
 export(cancel_queued_builds)
 export(delete_all_old_binaries)
+export(delete_all_old_binaries_fast)
 export(delete_old_files)
 export(delete_one)
 export(enable_all_workflows)

@@ -271,6 +271,32 @@ delete_old_binaries <- function(universe){
   }
 }
 
+#' @export
+#' @rdname rebuilds
+delete_all_old_binaries_fast <- function(){
+  macos <- list_all_packages(type = 'mac')
+  macos <- subset(macos, grepl("^4.1", macos$r))
+  for(i in seq_len(nrow(macos))){
+    x <- as.list(macos[i,])
+    delete_one(x$user, x$package, x$version, 'mac', '4.1')
+  }
+
+  windows <- list_all_packages(type = 'win')
+  windows <- subset(windows, grepl("^4.1", windows$r))
+  for(i in seq_len(nrow(windows))){
+    x <- as.list(windows[i,])
+    delete_one(x$user, x$package, x$version, 'win', '4.1')
+  }
+
+  # For Linux we dont do r-oldrel, so delete one release up
+  linux <- list_all_packages(type = 'linux')
+  linux <- subset(linux, grepl("^4.2", linux$r))
+  for(i in seq_len(nrow(linux))){
+    x <- as.list(linux[i,])
+    delete_one(x$user, x$package, x$version, 'linux', '4.2')
+  }
+}
+
 delete_old_builds <- function(before = '2021-04-01'){
   checks <- jsonlite::stream_in(url('https://r-universe.dev/stats/checks?limit=9999999'), verbose = FALSE)
   checks$builddate <- structure(sapply(checks$runs, function(df){df$builder$date[1]}), class = class(Sys.time()))
