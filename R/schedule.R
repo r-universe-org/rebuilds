@@ -38,7 +38,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   rebuilds <- builds[do_rebuild,]
   cat(sprintf("Rebuilding %d packages\n", sum(do_rebuild)))
   cat("Age distribution after rebuilds:\n")
-  print(as.data.frame(table(Age = builds[!do_rebuild,'age'])))
+  print(as.data.frame(table(Age = builds[!do_rebuild,'age'])), row.names = FALSE)
 
   # Trigger rebuilds with pauzes in between
   for(i in seq_len(nrow(rebuilds))){
