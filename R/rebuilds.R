@@ -7,7 +7,7 @@
 #' @param repository name of the github repository
 #' @param workflow name of the workflow to trigger
 #' @param days trigger rebuild every n days
-trigger_rebuilds <- function(repository = 'r-universe/jeroen', workflow = 'build.yml', days = 90){
+trigger_rebuilds <- function(repository = 'r-universe/jeroen', workflow = 'build.yml', delete_after = 90){
   if(basename(repository) == 'cran') {
     return()
   }

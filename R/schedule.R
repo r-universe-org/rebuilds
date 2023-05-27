@@ -48,6 +48,9 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
       Sys.sleep(900)
     }
   }
+
+  # Delete files older than 100 days
+  delete_old_files(Sys.Date() - 100)
 }
 
 get_oversize <- function(x, target){
