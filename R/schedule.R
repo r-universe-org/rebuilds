@@ -16,9 +16,13 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   sources$winfail <- sources[["_builder"]]$winbinary %in% failtypes & sources$OS_type != 'unix'
   sources$macfail <- sources[["_builder"]]$macbinary %in% failtypes & sources$OS_type != 'windows'
   retries <- subset(sources, winfail | macfail)
-  retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
+
+  # Temp: displayr causes api limits because of infinite recursion?
+  #failures <- subset(failures, retries$user != 'displayr')
+  #retries <- subset(retries, retries$user != 'displayr')
 
   # Retry failures only, set max_age to check against date of first run attempt
+  retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
   # Fresh full rebuilds (not just retries)
