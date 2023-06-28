@@ -13,8 +13,8 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   sources <- subset(files, type == 'src' & age < retry_days)
   sources$OS_type[is.na(sources$OS_type)] <- ""
   failtypes <- c("none", "cancelled") # do not retry for check failures right now.
-  sources$winfail <- sources[["_builder"]]$winbinary %in% failtypes & sources$OS_type != 'unix'
-  sources$macfail <- sources[["_builder"]]$macbinary %in% failtypes & sources$OS_type != 'windows'
+  sources$winfail <- sources[["_builder"]]$winbinary %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
+  sources$macfail <- sources[["_builder"]]$macbinary %in% failtypes & sources$OS_type != 'windows' & sources$user != 'cran'
   retries <- subset(sources, winfail | macfail)
 
   # Temp: displayr causes api limits because of infinite recursion?
