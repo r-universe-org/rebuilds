@@ -25,8 +25,8 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
-  # Fresh full rebuilds (not just retries)
-  builds <- subset(files, (type %in% c('src', 'failure')))
+  # Fresh full rebuilds (not just retries). Skip CRAN for now.
+  builds <- subset(files, user != 'cran' & (type %in% c('src', 'failure')))
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
   average_size <- round(length(do_rebuild) / rebuild_days)
   min_rebuilds <- average_size - 100
