@@ -13,8 +13,8 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   sources <- subset(files, type == 'src' & age < retry_days)
   sources$OS_type[is.na(sources$OS_type)] <- ""
   failtypes <- c("none", "cancelled") # do not retry for check failures right now.
-  sources$winfail <- sources[["_builder"]]$winbinary %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
-  sources$macfail <- sources[["_builder"]]$macbinary %in% failtypes & sources$OS_type != 'windows' & sources$user != 'cran'
+  sources$winfail <- sources[["_winbinary"]] %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
+  sources$macfail <- sources[["_macbinary"]] %in% failtypes & sources$OS_type != 'windows' & sources$user != 'cran'
   retries <- subset(sources, winfail | macfail)
 
   # Temp: displayr causes api limits because of infinite recursion?
@@ -22,7 +22,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   #retries <- subset(retries, retries$user != 'displayr')
 
   # Retry failures only, set max_age to check against date of first run attempt
-  retry_urls <- unique(c(retries[['_builder']]$url, failures[['_builder']]$url))
+  retry_urls <- unique(c(retries[['_url']], failures[['_url']]))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
   # Fresh full rebuilds (not just retries). Skip CRAN for now.

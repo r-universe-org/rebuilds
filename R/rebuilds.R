@@ -64,7 +64,7 @@ list_all_packages <- function(fields = '_builder.upstream', type = 'src'){
 
 rebuild_has_sysdeps <- function(skip = 'gcc'){
   df <- list_all_packages('_builder.sysdeps')
-  hasdeps = sapply(df[['_builder']]$sysdeps, function(x){length(setdiff(x$source, skip)) > 0})
+  hasdeps = sapply(df[['_sysdeps']], function(x){length(setdiff(x$source, skip)) > 0})
   df <- df[hasdeps,]
   for(i in seq_len(nrow(df))){
     rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
@@ -95,7 +95,7 @@ rebuild_failed_vignettes <- function(universe = NULL){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
   endpoint <- sprintf('https://%sr-universe.dev/stats/files?type=src&fields=_builder.status', subdomain)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
-  df <- oldies[oldies[['_builder']]$status == 'failure',]
+  df <- oldies[oldies[['_status']] == 'failure',]
   if(length(universe))
     cat(sprintf("Rebuilding %d packages in: %s\n", nrow(df), universe))
   message("Rebuilding ", nrow(df), " packages!")
