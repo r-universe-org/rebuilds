@@ -28,14 +28,14 @@
 trigger_rebuilds(
   repository = "r-universe/jeroen",
   workflow = "build.yml",
-  days = 90
+  delete_after = 90
 )
 
 rebuild_failures(universe = NULL)
 
 rebuild_vignettes(universe = "jeroen")
 
-list_all_packages(fields = "_builder.upstream", type = "src")
+list_all_packages(fields = "_upstream", type = "src")
 
 rebuild_oldies(universe, before = "2022-05-10", type = "src")
 
@@ -78,8 +78,6 @@ remove_all_packages_with_remotes()
 
 \item{workflow}{name of the workflow to trigger}
 
-\item{days}{trigger rebuild every n days}
-
 \item{universe}{name of the universe, use NULL for all universes}
 
 \item{fields}{extra fields you want to get}
@@ -87,6 +85,8 @@ remove_all_packages_with_remotes()
 \item{before}{date before which to rebuild}
 
 \item{pkg}{name of package to delete}
+
+\item{days}{trigger rebuild every n days}
 }
 \description{
 Automatically trigger workflows once every n days.

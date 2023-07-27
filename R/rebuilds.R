@@ -57,13 +57,13 @@ rebuild_vignettes <- function(universe = 'jeroen'){
 #' @export
 #' @rdname rebuilds
 #' @param fields extra fields you want to get
-list_all_packages <- function(fields = '_builder.upstream', type = 'src'){
+list_all_packages <- function(fields = '_upstream', type = 'src'){
   endpoint <- sprintf('https://r-universe.dev/stats/files?type=%s&fields=%s', type, paste(fields, collapse = ','))
   jsonlite::stream_in(url(endpoint))
 }
 
 rebuild_has_sysdeps <- function(skip = 'gcc'){
-  df <- list_all_packages('_builder.sysdeps')
+  df <- list_all_packages('_sysdeps')
   hasdeps = sapply(df[['_sysdeps']], function(x){length(setdiff(x$source, skip)) > 0})
   df <- df[hasdeps,]
   for(i in seq_len(nrow(df))){
@@ -93,7 +93,7 @@ rebuild_oldies <- function(universe, before = '2022-05-10', type = 'src'){
 #' @rdname rebuilds
 rebuild_failed_vignettes <- function(universe = NULL){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
-  endpoint <- sprintf('https://%sr-universe.dev/stats/files?type=src&fields=_builder.status', subdomain)
+  endpoint <- sprintf('https://%sr-universe.dev/stats/files?type=src&fields=_status', subdomain)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   df <- oldies[oldies[['_status']] == 'failure',]
   if(length(universe))
