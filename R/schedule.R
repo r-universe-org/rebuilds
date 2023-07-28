@@ -80,7 +80,9 @@ retry_run <- function(url, max_age = 5){
 
 rebuild_package <- function(universe, pkg){
   print_message("Rebuilding %s/%s", basename(universe), pkg)
-  trigger_workflow(repository = paste0('r-universe/', universe), workflow = 'build.yml', inputs = list(package = pkg))
+  tryCatch(trigger_workflow(repository = paste0('r-universe/', universe), workflow = 'build.yml', inputs = list(package = pkg)), error = function(e){
+    message(sprintf('ERROR rebuilding %s/%s: %s', basename(universe), pkg, e$message))
+  })
 }
 
 delete_package <- function(universe, pkg){
