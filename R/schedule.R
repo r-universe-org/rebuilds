@@ -6,7 +6,7 @@
 #' @param retry_days number of days to retry failures builds
 #' @param rebuild_days number of days after which to do a full fresh rebuild
 trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
-  con <- url('https://r-universe.dev/stats/files?fields=OS_type,_url,_winbinary,_macbinary')
+  con <- url('https://r-universe.dev/stats/files?fields=OS_type,_buildurl,_winbinary,_macbinary')
   files <- jsonlite::stream_in(con, verbose = FALSE)
   files$age <- as.numeric(Sys.Date() - as.Date(files$published))
   failures <- subset(files, type == 'failure' & age < retry_days)
@@ -22,7 +22,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   #retries <- subset(retries, retries$user != 'displayr')
 
   # Retry failures only, set max_age to check against date of first run attempt
-  retry_urls <- unique(c(retries[['_url']], failures[['_url']]))
+  retry_urls <- unique(c(retries[['_buildurl']], failures[['_buildurl']]))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
   # Fresh full rebuilds (not just retries). Skip CRAN for now.
