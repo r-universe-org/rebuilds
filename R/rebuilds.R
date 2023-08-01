@@ -1,3 +1,4 @@
+
 #' Rebuild packages
 #'
 #' Automatically trigger workflows once every n days.
@@ -144,14 +145,27 @@ rebuild_missing_binaries <- function(universe = 'ropensci'){
   })
 }
 
+list_monorepo <- function(universe = 'ropensci'){
+  tryCatch({
+    all <- gh::gh(sprintf('/repos/r-universe/%s/contents', universe), .limit = 1e5)
+    stopifnot(length(all) < 1000)
+    packages <- vapply(all, function(x){x$name}, character(1))
+    grep('^\\.', packages, value = TRUE, invert = TRUE)
+  }, error = function(e){
+    message(sprintf("Failed to get (full) list from API: %s. Going to clone", e$message))
+    tmp <- tempfile()
+    on.exit(unlink(tmp, recursive = TRUE))
+    stopifnot(0 == system(sprintf("git clone --quiet  --depth=1 https://github.com/r-universe/%s %s",universe, tmp)))
+    list.files(tmp)
+  })
+}
+
 #' @export
 #' @rdname rebuilds
 rebuild_missing_sources <- function(universe = 'ropensci'){
   available <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/packages', universe))
   tryCatch({
-    all <- gh::gh(sprintf('/repos/r-universe/%s/contents', universe))
-    packages <- vapply(all, function(x){x$name}, character(1))
-    packages <- grep('^\\.', packages, value = TRUE, invert = TRUE)
+    packages <- list_monorepo(universe)
     missing <- packages[!(packages %in% available)]
     sapply(missing, function(pkg){
       rebuild_one(paste0('r-universe/', universe), pkg)
