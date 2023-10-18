@@ -26,7 +26,21 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   lapply(retry_urls, retry_run, max_age = retry_days)
 
   # Fresh full rebuilds (not just retries). Skip CRAN for now.
-  builds <- subset(files, user != 'cran' & (type %in% c('src', 'failure')))
+  builds <- subset(files, (type %in% c('src', 'failure')))
+
+  cat("=== NON CRAN universes ===\n\n")
+  notcran <- subset(builds, user != 'cran')
+  trigger_full_rebuilds(notcran, rebuild_days = rebuild_days)
+
+  cat("=== CRAN universe ===\n\n")
+  oncran <- subset(builds, user == 'cran')
+  trigger_full_rebuilds(oncran, rebuild_days = rebuild_days, delay = 60)
+
+  # Delete files older than 100 days
+  delete_old_files(Sys.Date() - 100)
+}
+
+trigger_full_rebuilds <- function(builds, rebuild_days, delay = 900){
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
   average_size <- round(length(do_rebuild) / rebuild_days)
   min_rebuilds <- average_size - 100
@@ -49,12 +63,9 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
     if(i %% 50 == 0) {
       print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
-      Sys.sleep(900)
+      Sys.sleep(delay)
     }
   }
-
-  # Delete files older than 100 days
-  delete_old_files(Sys.Date() - 100)
 }
 
 get_oversize <- function(x, target){
