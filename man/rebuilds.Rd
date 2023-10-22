@@ -23,6 +23,7 @@
 \alias{rebuild_universe_remotes_only}
 \alias{remove_packages_with_remotes}
 \alias{remove_all_packages_with_remotes}
+\alias{rebuild_old_bioc}
 \title{Rebuild packages}
 \usage{
 trigger_rebuilds(
@@ -72,6 +73,8 @@ rebuild_universe_remotes_only(universe)
 remove_packages_with_remotes(org)
 
 remove_all_packages_with_remotes()
+
+rebuild_old_bioc(delay = 900)
 }
 \arguments{
 \item{repository}{name of the github repository}

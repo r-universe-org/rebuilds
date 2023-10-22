@@ -420,3 +420,21 @@ remove_all_packages_with_remotes <- function(){
     remove_packages_with_remotes(x$name)
   })
 }
+
+#' @export
+#' @rdname rebuilds
+rebuild_old_bioc <- function(delay = 900){
+  con <- url('https://r-universe.dev/stats/files?fields=_bioconductor&type=src&nocache2')
+  files <- jsonlite::stream_in(con, verbose = FALSE)
+  has_old_bioc <- as.logical(sapply(files[['_bioconductor']]$devel$bioc, length))
+  rebuilds <- files[has_old_bioc,]
+
+  # Trigger rebuilds with pauzes in between
+  for(i in seq_len(nrow(rebuilds))){
+    rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
+    if(i %% 50 == 0) {
+      print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
+      Sys.sleep(delay)
+    }
+  }
+}
