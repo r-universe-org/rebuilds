@@ -78,16 +78,14 @@ rebuild_has_sysdeps <- function(skip = 'gcc'){
 #' @rdname rebuilds
 rebuild_oldies <- function(universe, before = '2022-05-10', type = 'src'){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
-  endpoint <- sprintf('https://%sr-universe.dev/stats/files?fields=_maintainer.email&before=%s', subdomain, before)
+  endpoint <- sprintf('https://%sr-universe.dev/stats/files?before=%s', subdomain, before)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   df <- oldies[oldies$type == type,]
   if(length(universe))
     cat(sprintf("Rebuilding %d packages in: %s\n", nrow(df), universe))
   for(i in seq_len(nrow(df))){
-    info <- as.list(df[i,])
-    cat(sprintf('\r[%d] %s', i, info$package))
-    rebuild_one(paste0('r-universe/', info$user), pkg = info$package, author = info[['_maintainer']]$email)
-    Sys.sleep(1)
+    cat(sprintf('\r[%d] %s', i, df$package[i]))
+    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
   }
   df
 }
@@ -332,15 +330,14 @@ package_stats <- function(monorepo){
   git_stat_files(pkgs$path, repo = repo)
 }
 
-rebuild_one <- function(repository, pkg, author = NULL, workflow = 'build.yml'){
-  cat(sprintf("Rebuilding %s/%s (by %s)\n", basename(repository), pkg, author))
-  trigger_workflow(repository = repository, workflow = 'build.yml', inputs = list(package = pkg, author = author))
+rebuild_one <- function(repository, pkg, workflow = 'build.yml'){
+  cat(sprintf("Rebuilding %s/%s\n", basename(repository), pkg))
+  trigger_workflow(repository = repository, workflow = 'build.yml', inputs = list(package = pkg))
 }
 
 #' @importFrom gh gh
 trigger_workflow <- function(repository, workflow = 'sync.yml', inputs = NULL){
   url <- sprintf('/repos/%s/actions/workflows/%s/dispatches', repository, workflow)
-  inputs <- Filter(length, inputs)
   gh(url, .method = 'POST', ref = 'master', inputs = inputs)
 }
 
