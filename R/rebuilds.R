@@ -239,6 +239,27 @@ cancel_all_queued_builds <- function(){
 
 #' @export
 #' @rdname rebuilds
+delete_deployments <- function(universe = 'ropensci'){
+  deployments <- gh::gh('/repos/r-universe/{universe}/deployments', universe = universe, .limit = 1000)
+  invisible(lapply(rev(deployments), function(x){
+    cat("Deleting ", x$id, "\n")
+    gh::gh('DELETE /repos/r-universe/{universe}/deployments/{deployment_id}', universe = universe, deployment_id = x$id)
+  }))
+}
+
+#' @export
+#' @rdname rebuilds
+delete_all_deployments <- function(){
+  universes <- gh::gh('/orgs/r-universe/repos', .limit = Inf)
+  lapply(universes, function(universe){
+    cat("Deleting deployments in:", universe$name, "\n")
+    try(delete_deployments(universe$name))
+  })
+}
+
+
+#' @export
+#' @rdname rebuilds
 #' @param pkg name of package to delete
 delete_one <- function(universe, pkg, version = 'all', type = 'all', build = 'all'){
   userpwd <- Sys.getenv("CRANLIKEPWD", NA)
