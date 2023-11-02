@@ -241,9 +241,12 @@ cancel_all_queued_builds <- function(){
 #' @rdname rebuilds
 delete_deployments <- function(universe = 'ropensci'){
   deployments <- gh::gh('/repos/r-universe/{universe}/deployments', universe = universe, .limit = 1000)
+  if(length(deployments)){
+    try(gh::gh("DELETE /repos/r-universe/{universe}/environments/r-universe", universe = universe))
+  }
   invisible(lapply(rev(deployments), function(x){
     cat("Deleting ", x$id, "\n")
-    gh::gh('DELETE /repos/r-universe/{universe}/deployments/{deployment_id}', universe = universe, deployment_id = x$id)
+    try(gh::gh('DELETE /repos/r-universe/{universe}/deployments/{deployment_id}', universe = universe, deployment_id = x$id))
   }))
 }
 
@@ -253,7 +256,7 @@ delete_all_deployments <- function(){
   universes <- gh::gh('/orgs/r-universe/repos', .limit = Inf)
   lapply(universes, function(universe){
     cat("Deleting deployments in:", universe$name, "\n")
-    try(delete_deployments(universe$name))
+    delete_deployments(universe$name)
   })
 }
 
