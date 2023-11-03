@@ -28,3 +28,8 @@ rerun_one_job_for_all <- function(universe, job_name){
 rebuild_all_ropensci_docs <- function(){
   rerun_one_job_for_all('ropensci', 'documentation')
 }
+
+rebuild_all_webassembly <- function(universe){
+  rerun_one_job_for_all(universe, 'webassembly')
+}
+
