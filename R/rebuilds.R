@@ -239,24 +239,23 @@ cancel_all_queued_builds <- function(){
 
 #' @export
 #' @rdname rebuilds
-delete_deployments <- function(universe = 'ropensci'){
-  deployments <- gh::gh('/repos/r-universe/{universe}/deployments', universe = universe, .limit = 1000)
-  if(length(deployments)){
-    try(gh::gh("DELETE /repos/r-universe/{universe}/environments/r-universe", universe = universe))
-  }
-  invisible(lapply(rev(deployments), function(x){
-    cat("Deleting ", x$id, "\n")
-    try(gh::gh('DELETE /repos/r-universe/{universe}/deployments/{deployment_id}', universe = universe, deployment_id = x$id))
+delete_environments <- function(universe = 'ropensci'){
+  res <- gh::gh('/repos/r-universe/{universe}/environments', universe = universe, .limit = 1000)
+  environments <- Filter(\(x) x$name != 'production', res$environments)
+  invisible(lapply(environments, function(x){
+    cat("Deleting ", x$name, "from", universe, "\n")
+    try(gh::gh("DELETE /repos/r-universe/{universe}/environments/{environment}", universe = universe, environment = x$name))
   }))
 }
 
 #' @export
 #' @rdname rebuilds
-delete_all_deployments <- function(){
+delete_all_environments <- function(){
   universes <- gh::gh('/orgs/r-universe/repos', .limit = Inf)
   lapply(universes, function(universe){
-    cat("Deleting deployments in:", universe$name, "\n")
-    delete_deployments(universe$name)
+    cat("Checking:", universe$name, "\n")
+    delete_environments(universe$name)
+    Sys.sleep(1)
   })
 }
 

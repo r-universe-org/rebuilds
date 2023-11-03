@@ -16,8 +16,8 @@
 \alias{rebuild_all_missing_binaries}
 \alias{cancel_queued_builds}
 \alias{cancel_all_queued_builds}
-\alias{delete_deployments}
-\alias{delete_all_deployments}
+\alias{delete_environments}
+\alias{delete_all_environments}
 \alias{delete_one}
 \alias{delete_all_old_binaries}
 \alias{delete_all_old_binaries_fast}
@@ -62,9 +62,9 @@ cancel_queued_builds(universe = "ropensci")
 
 cancel_all_queued_builds()
 
-delete_deployments(universe = "ropensci")
+delete_environments(universe = "ropensci")
 
-delete_all_deployments()
+delete_all_environments()
 
 delete_one(universe, pkg, version = "all", type = "all", build = "all")
 
