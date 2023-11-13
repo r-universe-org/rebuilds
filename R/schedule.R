@@ -32,6 +32,11 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   notcran <- subset(builds, user != 'cran')
   trigger_full_rebuilds(notcran, rebuild_days = rebuild_days)
 
+  # Workaround for GitHub problems
+  if(curl::curl_fetch_memory('https://github.com/cran')$status != 200){
+    stop("https://github.com/cran unavailable")
+  }
+
   cat("=== CRAN universe ===\n\n")
   oncran <- subset(builds, user == 'cran')
   trigger_full_rebuilds(oncran, rebuild_days = rebuild_days, delay = 60)
