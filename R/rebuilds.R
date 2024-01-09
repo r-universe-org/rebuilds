@@ -145,6 +145,19 @@ rebuild_missing_binaries <- function(universe = 'ropensci'){
   })
 }
 
+#' @export
+#' @rdname rebuilds
+rebuild_missing_arm64 <- function(universe = 'ropensci'){
+  message("Checking: ", universe)
+  endpoint <- sprintf('https://%s.r-universe.dev', universe)
+  packages <- jsonlite::stream_in(url(paste0(endpoint, '/src/contrib')), verbose = FALSE)
+  binaries <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-arm64/contrib/4.3')), verbose = FALSE)
+  missing <- setdiff(packages$Package, binaries$Package)
+  sapply(missing, function(pkg){
+    rebuild_one(paste0('r-universe/', universe), pkg)
+  })
+}
+
 list_monorepo <- function(universe = 'ropensci'){
   tryCatch({
     all <- gh::gh(sprintf('/repos/r-universe/%s/contents', universe), .limit = 1e5)

@@ -4,7 +4,7 @@
 \alias{rerun_one_job}
 \title{Rerun a single job}
 \usage{
-rerun_one_job(url, name = "Deploy to package server")
+rerun_one_job(url, name = "Deploy to package server", skip_success = FALSE)
 }
 \description{
 Rerun a single job
