@@ -150,7 +150,7 @@ rebuild_missing_binaries <- function(universe = 'ropensci'){
 rebuild_missing_arm64 <- function(universe = 'ropensci'){
   message("Checking: ", universe)
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
-  packages <- jsonlite::stream_in(url(paste0(endpoint, '/src/contrib')), verbose = FALSE)
+  packages <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-x86_64/contrib/4.3')), verbose = FALSE)
   binaries <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-arm64/contrib/4.3')), verbose = FALSE)
   missing <- setdiff(packages$Package, binaries$Package)
   sapply(missing, function(pkg){
