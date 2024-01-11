@@ -158,6 +158,18 @@ rebuild_missing_arm64 <- function(universe = 'ropensci'){
   })
 }
 
+#' @export
+#' @rdname rebuilds
+rebuild_all_missing_arm64 <- function(){
+  orgstats <- jsonlite::stream_in(url('https://r-universe.dev/stats/universes'), verbose = FALSE)
+  orgstats$count <- sapply(orgstats$packages, length)
+  universes <- setdiff(orgstats$universe[order(orgstats$count, decreasing = TRUE)], 'cran')
+  out <- sapply(universes, function(x){
+    try(rebuild_missing_arm64(x))
+  })
+  Filter(length, out)
+}
+
 list_monorepo <- function(universe = 'ropensci'){
   tryCatch({
     all <- gh::gh(sprintf('/repos/r-universe/%s/contents', universe), .limit = 1e5)

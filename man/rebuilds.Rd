@@ -11,6 +11,7 @@
 \alias{rebuild_all_oldies}
 \alias{rebuild_missing_binaries}
 \alias{rebuild_missing_arm64}
+\alias{rebuild_all_missing_arm64}
 \alias{rebuild_missing_sources}
 \alias{rebuild_mixed_case_login}
 \alias{rebuild_all_missing_sources}
@@ -52,6 +53,8 @@ rebuild_all_oldies(before = "2022-04-01")
 rebuild_missing_binaries(universe = "ropensci")
 
 rebuild_missing_arm64(universe = "ropensci")
+
+rebuild_all_missing_arm64()
 
 rebuild_missing_sources(universe = "ropensci")
 
