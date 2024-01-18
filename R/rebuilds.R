@@ -151,10 +151,10 @@ rebuild_missing_arm64 <- function(universe = 'ropensci'){
   message("Checking: ", universe)
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
   packages <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-x86_64/contrib/4.3')), verbose = FALSE)
-  packages <- subset(packages, as.Date(packages$Built$Date) < '2024-01-11')
+  packages <- subset(packages, as.Date(packages$Built$Date) < '2024-01-19')
   binaries <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-arm64/contrib/4.3')), verbose = FALSE)
   failures <- jsonlite::stream_in(url(paste0(endpoint, '/stats/failures')), verbose = FALSE)
-  failures <- subset(failures, as.Date(failures[['_published']]) > '2024-01-11')
+  #failures <- subset(failures, as.Date(failures[['_published']]) > '2024-01-11')
   missing <- setdiff(packages$Package, c(binaries$Package, failures$Package))
   sapply(missing, function(pkg){
     rebuild_one(paste0('r-universe/', universe), pkg)
