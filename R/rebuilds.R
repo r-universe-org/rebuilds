@@ -8,7 +8,7 @@
 #' @param repository name of the github repository
 #' @param workflow name of the workflow to trigger
 #' @param days trigger rebuild every n days
-trigger_rebuilds <- function(repository = 'r-universe/jeroen', workflow = 'build.yml', delete_after = 90){
+trigger_rebuilds <- function(repository = 'r-universe/jeroen', delete_after = 90){
   if(basename(repository) == 'cran') {
     return()
   }
@@ -19,7 +19,7 @@ trigger_rebuilds <- function(repository = 'r-universe/jeroen', workflow = 'build
   rebuilds <- stats[select,]
   print(rebuilds)
   for(pkg in rebuilds$file){
-    rebuild_one(repository = repository, pkg = pkg, workflow = workflow)
+    rebuild_one(repository = repository, pkg = pkg)
   }
   print("Retrying failed builds...")
   rebuild_failures(basename(repository))
@@ -382,9 +382,14 @@ package_stats <- function(monorepo){
   git_stat_files(pkgs$path, repo = repo)
 }
 
-rebuild_one <- function(repository, pkg, workflow = 'build.yml'){
+rebuild_one <- function(repository, pkg){
   cat(sprintf("Rebuilding %s/%s\n", basename(repository), pkg))
   trigger_workflow(repository = repository, workflow = 'build.yml', inputs = list(package = pkg))
+}
+
+revdep_check <- function(repository, pkg){
+  cat(sprintf("Revdep check for %s/%s\n", basename(repository), pkg))
+  trigger_workflow(repository = repository, workflow = 'recheck.yml', inputs = list(package = pkg))
 }
 
 #' @importFrom gh gh

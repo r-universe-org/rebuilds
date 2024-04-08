@@ -24,6 +24,8 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   # Retry failures only, set max_age to check against date of first run attempt
   retry_urls <- unique(c(retries[['_buildurl']], failures[['_buildurl']]))
   lapply(retry_urls, retry_run, max_age = retry_days)
+  return()
+
 
   # Fresh full rebuilds (not just retries). Skip CRAN for now.
   builds <- subset(files, (type %in% c('src', 'failure')))
