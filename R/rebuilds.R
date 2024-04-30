@@ -134,8 +134,8 @@ rebuild_all_oldies <- function(before = '2022-04-01'){
 rebuild_missing_binaries <- function(universe = 'ropensci'){
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
   packages <- jsonlite::stream_in(url(paste0(endpoint, '/src/contrib')), verbose = FALSE)
-  macos <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/contrib/4.2')), verbose = FALSE)
-  windows <- jsonlite::stream_in(url(paste0(endpoint, '/bin/windows/contrib/4.2')), verbose = FALSE)
+  macos <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/contrib/4.4')), verbose = FALSE)
+  windows <- jsonlite::stream_in(url(paste0(endpoint, '/bin/windows/contrib/4.4')), verbose = FALSE)
   missing_mac <- which(!paste(packages$Package, packages$Version) %in% paste(macos$Package, macos$Version))
   missing_win <- which(!paste(packages$Package, packages$Version) %in% paste(windows$Package, windows$Version))
   missing <- unique(c(missing_mac, missing_win))
@@ -341,25 +341,25 @@ delete_old_binaries <- function(universe){
 #' @rdname rebuilds
 delete_all_old_binaries_fast <- function(){
   macos <- list_all_packages(type = 'mac')
-  macos <- subset(macos, grepl("^4.1", macos$r))
+  macos <- subset(macos, grepl("^4.2", macos$r))
   for(i in seq_len(nrow(macos))){
     x <- as.list(macos[i,])
-    delete_one(x$user, x$package, x$version, 'mac', '4.1')
+    delete_one(x$user, x$package, x$version, 'mac', '4.2')
   }
 
   windows <- list_all_packages(type = 'win')
-  windows <- subset(windows, grepl("^4.1", windows$r))
+  windows <- subset(windows, grepl("^4.2", windows$r))
   for(i in seq_len(nrow(windows))){
     x <- as.list(windows[i,])
-    delete_one(x$user, x$package, x$version, 'win', '4.1')
+    delete_one(x$user, x$package, x$version, 'win', '4.2')
   }
 
   # For Linux we dont do r-oldrel, so delete one release up
   linux <- list_all_packages(type = 'linux')
-  linux <- subset(linux, grepl("^4.2", linux$r))
+  linux <- subset(linux, grepl("^4.3", linux$r))
   for(i in seq_len(nrow(linux))){
     x <- as.list(linux[i,])
-    delete_one(x$user, x$package, x$version, 'linux', '4.2')
+    delete_one(x$user, x$package, x$version, 'linux', '4.3')
   }
 }
 
