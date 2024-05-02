@@ -147,6 +147,19 @@ rebuild_missing_binaries <- function(universe = 'ropensci'){
 
 #' @export
 #' @rdname rebuilds
+retry_failed_binaries <- function(universe = 'ropensci'){
+  endpoint <- sprintf('https://%s.r-universe.dev/api/packages?stream=true&fields=_winbinary,_macbinary,_wasmbinary,_buildurl', universe)
+  packages <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
+  missing <- which(packages[['_winbinary']] == 'none' | packages[['_macbinary']] == 'none' | packages[['_wasmbinary']] == 'none')
+  retries <- packages[missing,]
+  for(i in seq_len(nrow(retries))){
+    message("Retrying: ", retries[[i, 'Package']])
+    retry_run(retries[[i, '_buildurl']], max_age = 30)
+  }
+}
+
+#' @export
+#' @rdname rebuilds
 rebuild_missing_arm64 <- function(universe = 'ropensci'){
   message("Checking: ", universe)
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
