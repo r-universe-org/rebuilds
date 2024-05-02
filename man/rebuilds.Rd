@@ -2,7 +2,7 @@
 % Please edit documentation in R/rebuilds.R
 \name{trigger_rebuilds}
 \alias{trigger_rebuilds}
-\alias{rebuild_failures}
+\alias{retry_failures}
 \alias{rebuild_vignettes}
 \alias{list_all_packages}
 \alias{rebuild_oldies}
@@ -30,13 +30,9 @@
 \alias{rebuild_old_bioc}
 \title{Rebuild packages}
 \usage{
-trigger_rebuilds(
-  repository = "r-universe/jeroen",
-  workflow = "build.yml",
-  delete_after = 90
-)
+trigger_rebuilds(repository = "r-universe/jeroen", delete_after = 90)
 
-rebuild_failures(universe = NULL)
+retry_failures(universe = NULL)
 
 rebuild_vignettes(universe = "jeroen")
 
@@ -91,8 +87,6 @@ rebuild_old_bioc(delay = 900)
 \arguments{
 \item{repository}{name of the github repository}
 
-\item{workflow}{name of the workflow to trigger}
-
 \item{universe}{name of the universe, use NULL for all universes}
 
 \item{fields}{extra fields you want to get}
@@ -100,6 +94,8 @@ rebuild_old_bioc(delay = 900)
 \item{before}{date before which to rebuild}
 
 \item{pkg}{name of package to delete}
+
+\item{workflow}{name of the workflow to trigger}
 
 \item{days}{trigger rebuild every n days}
 }
