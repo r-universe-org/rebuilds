@@ -32,7 +32,7 @@ rerun_one_job_for_all <- function(universe, job_name, skip_success = FALSE){
 }
 
 rebuild_ropensci_docs <- function(){
-  rerun_one_job_for_all('ropensci', 'documentation')
+  rerun_one_job_for_all('ropensci', 'pkgdown')
 }
 
 rebuild_webassembly <- function(universe){
