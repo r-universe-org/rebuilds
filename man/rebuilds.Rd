@@ -24,6 +24,7 @@
 \alias{delete_one}
 \alias{delete_all_old_binaries}
 \alias{delete_all_old_binaries_fast}
+\alias{trigger_all_cleanups}
 \alias{rebuild_all_remotes}
 \alias{rebuild_universe_remotes_only}
 \alias{remove_packages_with_remotes}
@@ -76,6 +77,8 @@ delete_one(universe, pkg, version = "all", type = "all", build = "all")
 delete_all_old_binaries()
 
 delete_all_old_binaries_fast()
+
+trigger_all_cleanups()
 
 rebuild_all_remotes()
 

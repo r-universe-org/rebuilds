@@ -418,6 +418,17 @@ revdep_check <- function(repository, pkg){
   trigger_workflow(repository = repository, workflow = 'recheck.yml', inputs = list(package = pkg))
 }
 
+#' @export
+#' @rdname rebuilds
+trigger_all_cleanups <- function(){
+  universes <- gh::gh('/orgs/r-universe/repos', .limit = Inf)
+  lapply(rev(universes), function(x){
+    message("Triggering cleanup in ", x$full_name)
+    try(trigger_workflow(repository = x$full_name, workflow = 'cleanup.yml'))
+    Sys.sleep(1)
+  })
+}
+
 #' @importFrom gh gh
 trigger_workflow <- function(repository, workflow = 'sync.yml', inputs = NULL){
   url <- sprintf('/repos/%s/actions/workflows/%s/dispatches', repository, workflow)
