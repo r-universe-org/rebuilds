@@ -90,6 +90,19 @@ rebuild_oldies <- function(universe, before = '2022-05-10', type = 'src'){
   df
 }
 
+# If something went wrong, redo recent uploads
+rebuild_recent_builds <- function(hours = 8){
+  df <- rebuilds:::list_all_packages(fields = '_created')
+  df$time <- strftime(sub("T", " ", df[['_created']], "%Y-%m-%d %H:%M:%S"))
+  cutoff <- Sys.time() - hours*3600
+  df <- df[df$time > cutoff,]
+  message("Rebuilding ", nrow(df), " packages!")
+  for(i in seq_len(nrow(df))){
+    cat(sprintf('\r[%d] %s', i, df$package[i]))
+    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
+  }
+}
+
 #' @export
 #' @rdname rebuilds
 rebuild_failed_vignettes <- function(universe = NULL){
