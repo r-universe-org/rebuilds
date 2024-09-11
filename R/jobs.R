@@ -23,7 +23,7 @@ get_job_info <- function(url, name){
   return(jobs[[1]])
 }
 
-rerun_one_job_for_all <- function(universe, job_name, skip_success = FALSE){
+rerun_one_job_for_universe <- function(universe, job_name, skip_success = FALSE){
   descriptions <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/descriptions", universe)))
   urls <- descriptions[['_buildurl']]
   lapply(urls, function(url){
@@ -31,18 +31,24 @@ rerun_one_job_for_all <- function(universe, job_name, skip_success = FALSE){
   })
 }
 
-rebuild_ropensci_docs <- function(){
-  rerun_one_job_for_all('ropensci', 'pkgdown')
-}
-
-rebuild_webassembly <- function(universe){
-  rerun_one_job_for_all(universe, 'webassembly', skip_success = TRUE)
-}
-
 rebuild_all_webassembly <- function(){
-  universes <- gh('/orgs/r-universe/repos', .limit = Inf)
-  lapply(universes, function(x){
-    rebuild_webassembly(x$name)
+  files <- jsonlite::stream_in(url("https://r-universe.dev/stats/files?type=wasm&before=2024-09-11T19:00:00.000Z&fields=_buildurl,Packaged.Date"))
+  files$age <- Sys.Date() - as.Date(rebuilds:::parse_time(files$Packaged$Date))
+  files <- subset(files, age < 30 & r > '4.4')
+  urls <- unique(files[['_buildurl']])
+  lapply(urls, function(url){
+    tryCatch(rerun_one_job(url, 'R-release for WebAssembly', skip_success = FALSE), error = wait_for_api_limit_reset)
   })
 }
 
+rebuild_ropensci_docs <- function(){
+  rerun_one_job_for_universe('ropensci', 'pkgdown')
+}
+
+wait_for_api_limit_reset <- function(...){
+  limits <- gh::gh_rate_limit()
+  if(limits$remaining == 0){
+    secs <- difftime(limits$reset, Sys.time(), units='secs')
+    Sys.sleep(secs + 10)
+  }
+}
