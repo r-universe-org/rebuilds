@@ -73,6 +73,18 @@ rebuild_has_sysdeps <- function(skip = 'gcc'){
   df
 }
 
+rebuild_all_fortran <- function(){
+  df <- rebuilds:::list_all_packages('_fortran')
+  rebuilds <- df[which(df[['_fortran']]),]
+  for(i in seq_len(nrow(df))){
+    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
+    if(i %% 50 == 0) {
+      print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
+      Sys.sleep(900)
+    }
+  }
+}
+
 #' @export
 #' @param before date before which to rebuild
 #' @rdname rebuilds
