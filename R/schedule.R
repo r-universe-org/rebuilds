@@ -6,7 +6,7 @@
 #' @param retry_days number of days to retry failures builds
 #' @param rebuild_days number of days after which to do a full fresh rebuild
 trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
-  con <- url('https://r-universe.dev/stats/files?fields=OS_type,_buildurl,_winbinary,_macbinary')
+  con <- url('https://r-universe.dev/stats/files?fields=OS_type,_buildurl,_winbinary,_macbinary,_windevel,_linuxdevel')
   files <- jsonlite::stream_in(con, verbose = FALSE)
   files$age <- as.numeric(Sys.Date() - as.Date(files$published))
   failures <- subset(files, type == 'failure' & age < retry_days)
@@ -14,8 +14,10 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   sources$OS_type[is.na(sources$OS_type)] <- ""
   failtypes <- c("none", "cancelled") # do not retry for check failures right now.
   sources$winfail <- sources[["_winbinary"]] %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
+  sources$windevel <- sources[["_windevel"]] %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
   sources$macfail <- sources[["_macbinary"]] %in% failtypes & sources$OS_type != 'windows' & sources$user != 'cran'
-  retries <- subset(sources, winfail | macfail)
+  sources$linuxfail <- sources[["_linuxdevel"]] %in% failtypes & sources$OS_type != 'windows'
+  retries <- subset(sources, winfail | macfail | linuxfail | windevel)
 
   # Temp: displayr causes api limits because of infinite recursion?
   #failures <- subset(failures, retries$user != 'displayr')
