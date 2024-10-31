@@ -88,14 +88,14 @@ rebuild_all_fortran <- function(){
 #' @export
 #' @param before date before which to rebuild
 #' @rdname rebuilds
-rebuild_oldies <- function(universe, before = '2022-05-10', types = c('src', 'failure')){
+rebuild_oldies <- function(universe, before = Sys.Date()-32, types = c('src', 'failure')){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
   endpoint <- sprintf('https://%sr-universe.dev/stats/files?before=%s', subdomain, before)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   df <- oldies[oldies$type %in% types,]
   if(length(universe))
     cat(sprintf("Rebuilding %d packages in: %s\n", nrow(df), universe))
-  for(i in seq_len(nrow(df))){
+  for(i in sample(seq_len(nrow(df)))){
     cat(sprintf('\r[%d] %s', i, df$package[i]))
     rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
   }

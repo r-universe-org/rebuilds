@@ -40,7 +40,7 @@ rebuild_vignettes(universe = "jeroen")
 
 list_all_packages(fields = "_upstream", type = "src")
 
-rebuild_oldies(universe, before = "2022-05-10", type = "src")
+rebuild_oldies(universe, before = Sys.Date() - 32, types = c("src", "failure"))
 
 rebuild_failed_vignettes(universe = NULL)
 
