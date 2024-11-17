@@ -41,11 +41,27 @@ rebuild_all_webassembly <- function(){
   })
 }
 
+redeploy_everything <- function(){
+  files <- jsonlite::stream_in(url("https://bioc.r-universe.dev/stats/files?type=src&fields=_buildurl"))
+  urls <- rev(unique(files[['_buildurl']]))
+  #lapply(urls, function(url){
+  #  message(url)
+  #  tryCatch(rerun_one_job(url, 'Deploy to package server', skip_success = FALSE), error = wait_for_api_limit_reset)
+  #})
+  failures <- jsonlite::stream_in(url("https://bioc.r-universe.dev/stats/files?type=failure&fields=_buildurl"))
+  urls <- unique(failures[['_buildurl']])
+  lapply(urls, function(url){
+    message(url)
+    tryCatch(rerun_one_job(url, 'Deploy to package server', skip_success = FALSE), error = message)
+  })
+}
+
 rebuild_ropensci_docs <- function(){
   rerun_one_job_for_universe('ropensci', 'pkgdown')
 }
 
-wait_for_api_limit_reset <- function(...){
+wait_for_api_limit_reset <- function(err){
+  message(err)
   limits <- gh::gh_rate_limit()
   if(limits$remaining == 0){
     secs <- difftime(limits$reset, Sys.time(), units='secs')
