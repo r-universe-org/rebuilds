@@ -56,6 +56,18 @@ redeploy_everything <- function(){
   })
 }
 
+redeploy_one_for_each <- function(){
+  files <- jsonlite::stream_in(url("https://r-universe.dev/stats/files?type=src&fields=_buildurl"))
+  files <- files[as.Date(files$published) > '2024-11-13',]
+  files <- files[order(files$published, decreasing = TRUE),]
+  files <- files[!duplicated(files$user),]
+  urls <- files[['_buildurl']]
+  lapply(urls, function(url){
+    message(url)
+    tryCatch(rerun_one_job(url, 'Deploy to package server', skip_success = FALSE), error = message)
+  })
+}
+
 rebuild_ropensci_docs <- function(){
   rerun_one_job_for_universe('ropensci', 'pkgdown')
 }
