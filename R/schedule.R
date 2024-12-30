@@ -107,7 +107,7 @@ delete_package <- function(universe, pkg){
   userpwd <- Sys.getenv("CRANLIKEPWD")
   message("Deleting: ", pkg)
   h <- curl::new_handle(customrequest = 'DELETE', userpwd = userpwd)
-  url <- sprintf("https://%s.r-universe.dev/packages/%s", universe, pkg)
+  url <- sprintf("https://%s.r-universe.dev/api/packages/%s", universe, pkg)
   out <- parse_res(curl::curl_fetch_memory(url, handle = h))
   stopifnot(out$Package == pkg)
 }

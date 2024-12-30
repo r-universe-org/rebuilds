@@ -14,7 +14,7 @@ delete_old_files <- function(before = '2021-12-03'){
   print(df, row.names = FALSE)
   for(i in seq_len(nrow(df))){
     x <- as.list(df[i,])
-    url <- sprintf("https://%s.r-universe.dev/packages/%s/%s/%s", x$user, x$package, x$version, x$type)
+    url <- sprintf("https://%s.r-universe.dev/api/packages/%s/%s/%s", x$user, x$package, x$version, x$type)
     if(x$type != 'src')
       url <- paste0(url, '/', x$r)
     message("DELETE ", url)

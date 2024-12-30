@@ -230,7 +230,7 @@ list_monorepo <- function(universe = 'ropensci'){
 #' @export
 #' @rdname rebuilds
 rebuild_missing_sources <- function(universe = 'ropensci'){
-  available <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/packages', universe))
+  available <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/ls', universe))
   tryCatch({
     packages <- list_monorepo(universe)
     missing <- packages[!(packages %in% available)]
@@ -335,7 +335,7 @@ delete_one <- function(universe, pkg, version = 'all', type = 'all', build = 'al
   if(is.na(userpwd)) stop("No CRANLIKEPWD set, cannot deploy")
   message(sprintf("Deleting: %s/%s (%s-%s)", universe, pkg, type, build))
   h <- curl::new_handle(customrequest = 'DELETE', userpwd = userpwd)
-  url <- sprintf("https://%s.r-universe.dev/packages/%s", universe, pkg)
+  url <- sprintf("https://%s.r-universe.dev/api/packages/%s", universe, pkg)
   if(!identical(version, 'all')){
     url <- paste0(url, '/', version)
     if(!identical(type, 'all')){
