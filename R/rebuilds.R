@@ -105,7 +105,7 @@ rebuild_oldies <- function(universe, before = Sys.Date()-32, types = c('src', 'f
 # If something went wrong, redo recent uploads
 rebuild_recent_builds <- function(hours = 8){
   df <- rebuilds:::list_all_packages(fields = '_created')
-  df$time <- strftime(sub("T", " ", df[['_created']], "%Y-%m-%d %H:%M:%S"))
+  df$time <- strftime(sub("T", " ", df[['_created']]), "%Y-%m-%d %H:%M:%S")
   cutoff <- Sys.time() - hours*3600
   df <- df[df$time > cutoff,]
   message("Rebuilding ", nrow(df), " packages!")
