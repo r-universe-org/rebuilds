@@ -24,10 +24,11 @@ get_job_info <- function(url, name){
 }
 
 rerun_one_job_for_universe <- function(universe, job_name, skip_success = FALSE){
-  descriptions <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/descriptions", universe)))
-  urls <- descriptions[['_buildurl']]
+  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/files?type=src&limit=9999999&fields=_buildurl", universe)))
+  urls <- files[['_buildurl']]
   lapply(urls, function(url){
     try(rerun_one_job(url, job_name, skip_success = skip_success))
+    Sys.sleep(6)
   })
 }
 
