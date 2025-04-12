@@ -32,6 +32,19 @@ rerun_one_job_for_universe <- function(universe, job_name, skip_success = FALSE)
   })
 }
 
+rerun_all_r_devel_for_universe <- function(universe = 'cran', type = 'linux', version = '4.6.0'){
+  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/files?limit=9999999&fields=_buildurl,_usedby", universe)))
+  skiplist <- files[files$r == '4.6.0' & files$type=='linux','package']
+  sources <- files[files$type=='src',]
+  sources <- sources[is.na(match(sources$package, skiplist)),]
+  sources <- sources[order(sources[['_usedby']], decreasing = TRUE), ]
+  urls <- sources[['_buildurl']]
+  lapply(urls, function(url){
+    try(rerun_one_job(url, name = paste("R-devel for", type), skip_success = FALSE))
+    Sys.sleep(2)
+  })
+}
+
 rebuild_all_webassembly <- function(){
   files <- jsonlite::stream_in(url("https://r-universe.dev/stats/files?type=wasm&before=2024-09-11T19:00:00.000Z&fields=_buildurl,Packaged.Date"))
   files$age <- Sys.Date() - as.Date(rebuilds:::parse_time(files$Packaged$Date))
