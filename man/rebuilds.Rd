@@ -34,7 +34,7 @@
 \usage{
 trigger_rebuilds(repository = "r-universe/jeroen", delete_after = 90)
 
-retry_failures(universe = NULL)
+retry_failures(universe = NULL, rebuild = FALSE)
 
 rebuild_vignettes(universe = "jeroen")
 

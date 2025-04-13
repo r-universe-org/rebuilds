@@ -30,14 +30,17 @@ trigger_rebuilds <- function(repository = 'r-universe/jeroen', delete_after = 90
 
 #' @export
 #' @rdname rebuilds
-retry_failures <- function(universe = NULL){
+retry_failures <- function(universe = NULL, rebuild = FALSE){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
   endpoint <- sprintf('https://%sr-universe.dev/stats/failures', subdomain)
   df <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   for(i in seq_len(nrow(df))){
-    retry_run(df[[i, '_buildurl']])
+    if(isTRUE(rebuild)){
+      rebuild_one(paste0('r-universe/', df[[i, '_user']]), df$Package[i])
+    } else {
+      retry_run(df[[i, '_buildurl']])
+    }
   }
-  df
 }
 
 #' @export
