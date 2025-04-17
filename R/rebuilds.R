@@ -45,6 +45,17 @@ retry_failures <- function(universe = NULL, rebuild = FALSE){
 
 #' @export
 #' @rdname rebuilds
+retry_everything <- function(universe){
+  endpoint <- sprintf('https://%s.r-universe.dev/stats/files?fields=_buildurl', universe)
+  df <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
+  failures <- df[df$type == 'failure',]
+  sources <- df[df$type == 'src' & !(df$package %in% failures$package),]
+  buildurls <- c(failures[['_buildurl']], sources[['_buildurl']])
+  lapply(buildurls, retry_run)
+}
+
+#' @export
+#' @rdname rebuilds
 #' @param universe name of the universe, use NULL for all universes
 rebuild_vignettes <- function(universe = 'jeroen'){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
