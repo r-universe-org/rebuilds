@@ -84,16 +84,18 @@ get_oversize <- function(x, target){
 # max_age below refers to the date of the 1st attempt of this run. The 'published' field
 # above OTOH refers the most recent attempt/failure, so it resets to 0 for every new attempt.
 retry_run <- function(url, max_age = 5){
-  endpoint <- sub("https://github.com/", "/repos/", url)
-  res <- gh::gh(endpoint) #this errors if the run is expired or deleted
-  created <- parse_time(res$created_at)
-  age <- difftime(Sys.time(), created, units = 'days')
-  if(age > max_age) {
-    print_message("Too old to retry (%d days): %s", as.integer(age), endpoint)
-  } else {
-    print_message("Retrying (%d days old): %s", as.integer(age), endpoint)
-    try(gh::gh(sprintf('%s/rerun-failed-jobs', endpoint), .method = 'POST'))
-  }
+  try({
+    endpoint <- sub("https://github.com/", "/repos/", url)
+    res <- gh::gh(endpoint) #this errors if the run is expired or deleted
+    created <- parse_time(res$created_at)
+    age <- difftime(Sys.time(), created, units = 'days')
+    if(age > max_age) {
+      print_message("Too old to retry (%d days): %s", as.integer(age), endpoint)
+    } else {
+      print_message("Retrying (%d days old): %s", as.integer(age), endpoint)
+      gh::gh(sprintf('%s/rerun-failed-jobs', endpoint), .method = 'POST')
+    }
+  })
 }
 
 rebuild_package <- function(universe, pkg){
