@@ -3,10 +3,12 @@
 \name{trigger_rebuilds}
 \alias{trigger_rebuilds}
 \alias{retry_failures}
+\alias{retry_everything}
 \alias{rebuild_vignettes}
 \alias{list_all_packages}
 \alias{rebuild_oldies}
 \alias{rebuild_failed_vignettes}
+\alias{rebuild_all_missing_field}
 \alias{rebuild_bioc_packages}
 \alias{rebuild_all_oldies}
 \alias{rebuild_missing_binaries}
@@ -36,6 +38,8 @@ trigger_rebuilds(repository = "r-universe/jeroen", delete_after = 90)
 
 retry_failures(universe = NULL, rebuild = FALSE)
 
+retry_everything(universe)
+
 rebuild_vignettes(universe = "jeroen")
 
 list_all_packages(fields = "_upstream", type = "src")
@@ -43,6 +47,8 @@ list_all_packages(fields = "_upstream", type = "src")
 rebuild_oldies(universe, before = Sys.Date() - 32, types = c("src", "failure"))
 
 rebuild_failed_vignettes(universe = NULL)
+
+rebuild_all_missing_field(field = "_jobs")
 
 rebuild_bioc_packages()
 

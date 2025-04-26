@@ -148,6 +148,27 @@ rebuild_failed_vignettes <- function(universe = NULL){
 
 #' @export
 #' @rdname rebuilds
+rebuild_all_missing_field <- function(field = '_jobs'){
+  endpoint <- sprintf('https://r-universe.dev/stats/files?type=src&fields=%s', field)
+  files <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
+  nojobs <- sapply(files[['_jobs']], is.null)
+  df <- files[nojobs,]
+  df <- df[order(df$published),]
+  message("Rebuilding ", nrow(df), " packages!")
+  for(i in seq_len(nrow(df))) {
+    try(rebuild_one(paste0('r-universe/', df$user[i]), df$package[i]))
+    if(df$user[i] == 'cran'){
+      Sys.sleep(5)
+    } else {
+      Sys.sleep(10)
+    }
+  }
+  df
+}
+
+
+#' @export
+#' @rdname rebuilds
 rebuild_bioc_packages <- function(){
   df <- read.csv('https://r-universe-org.github.io/cran-to-git/crantogit.csv', stringsAsFactors = FALSE)
   df <- df[df$registry == 'bioc',]
