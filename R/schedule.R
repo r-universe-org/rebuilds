@@ -6,29 +6,24 @@
 #' @param retry_days number of days to retry failures builds
 #' @param rebuild_days number of days after which to do a full fresh rebuild
 trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
-  con <- url('https://r-universe.dev/stats/files?fields=OS_type,_buildurl,_winbinary,_macbinary,_windevel,_linuxdevel')
-  files <- jsonlite::stream_in(con, verbose = FALSE)
-  files$age <- as.numeric(Sys.Date() - as.Date(files$published))
-  failures <- subset(files, type == 'failure' & age < retry_days)
-  sources <- subset(files, type == 'src' & age < retry_days)
-  sources$OS_type[is.na(sources$OS_type)] <- ""
-  failtypes <- c("none", "cancelled") # do not retry for check failures right now.
-  sources$winfail <- sources[["_winbinary"]] %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
-  sources$windevel <- sources[["_windevel"]] %in% failtypes & sources$OS_type != 'unix' & sources$user != 'cran'
-  sources$macfail <- sources[["_macbinary"]] %in% failtypes & sources$OS_type != 'windows' & sources$user != 'cran'
-  sources$linuxfail <- sources[["_linuxdevel"]] %in% failtypes & sources$OS_type != 'windows'
-  retries <- subset(sources, winfail | macfail | linuxfail | windevel)
-
-  # Temp: displayr causes api limits because of infinite recursion?
-  #failures <- subset(failures, retries$user != 'displayr')
-  #retries <- subset(retries, retries$user != 'displayr')
+  failures <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?type=failure&fields=_buildurl'), verbose = FALSE)
+  sources <- jsonlite::stream_in(url('https://r-universe.dev/stats/files?type=src&fields=_buildurl,_jobs'), verbose = FALSE)
+  dupes <- paste(sources$user, sources$package) %in% paste(failures$user, failures$package)
+  sources <- sources[!dupes,]
+  sources$hasfail <- vapply(sources[['_jobs']], function(jobs){
+    any(jobs$check == 'FAIL' & !grepl('wasm', jobs$config))
+  }, logical(1))
+  failures$age <- as.numeric(Sys.Date() - as.Date(failures$published))
+  sources$age <- as.numeric(Sys.Date() - as.Date(sources$published))
+  retry_failures <- subset(failures, age < retry_days)
+  retry_sources <- subset(sources, hasfail & age < retry_days)
 
   # Retry failures only, set max_age to check against date of first run attempt
-  retry_urls <- unique(c(retries[['_buildurl']], failures[['_buildurl']]))
+  retry_urls <- unique(c(retry_failures[['_buildurl']], retry_sources[['_buildurl']]))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
-  # Fresh full rebuilds (not just retries). Skip CRAN for now.
-  builds <- subset(files, (type %in% c('src', 'failure')))
+  # Fresh full rebuilds (not just retries)
+  builds <- rbind(failures[c('user', 'package', 'age')], sources[c('user', 'package', 'age')])
 
   cat("=== NON CRAN universes ===\n\n")
   notcran <- subset(builds, user != 'cran')
@@ -41,13 +36,13 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
 
   cat("=== CRAN universe ===\n\n")
   oncran <- subset(builds, user == 'cran')
-  trigger_full_rebuilds(oncran, rebuild_days = rebuild_days, delay = 60)
+  trigger_full_rebuilds(oncran, rebuild_days = rebuild_days)
 
   # Delete files older than 100 days
   delete_old_files(Sys.Date() - 100)
 }
 
-trigger_full_rebuilds <- function(builds, rebuild_days, delay = 900){
+trigger_full_rebuilds <- function(builds, rebuild_days, delay = 5){
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
   average_size <- round(length(do_rebuild) / rebuild_days)
   min_rebuilds <- average_size - 100
@@ -68,10 +63,7 @@ trigger_full_rebuilds <- function(builds, rebuild_days, delay = 900){
   # Trigger rebuilds with pauzes in between
   for(i in seq_len(nrow(rebuilds))){
     rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
-    if(i %% 50 == 0) {
-      print_message("Triggered %d rebuilds. Waiting for a few minutes.", i)
-      Sys.sleep(delay)
-    }
+    Sys.sleep(delay)
   }
 }
 
