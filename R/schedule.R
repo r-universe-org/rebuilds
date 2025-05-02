@@ -76,7 +76,7 @@ get_oversize <- function(x, target){
 # max_age below refers to the date of the 1st attempt of this run. The 'published' field
 # above OTOH refers the most recent attempt/failure, so it resets to 0 for every new attempt.
 retry_run <- function(url, max_age = 5){
-  try({
+  tryCatch({
     endpoint <- sub("https://github.com/", "/repos/", url)
     res <- gh::gh(endpoint) #this errors if the run is expired or deleted
     created <- parse_time(res$created_at)
@@ -87,6 +87,8 @@ retry_run <- function(url, max_age = 5){
       print_message("Retrying (%d days old): %s", as.integer(age), endpoint)
       gh::gh(sprintf('%s/rerun-failed-jobs', endpoint), .method = 'POST')
     }
+  }, error = function(e){
+    print_message("ERROR for %s: %s", url, e$message)
   })
 }
 
