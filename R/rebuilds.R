@@ -223,15 +223,18 @@ retry_failed_binaries <- function(universe = 'ropensci'){
 rebuild_missing_arm64 <- function(universe = 'ropensci'){
   message("Checking: ", universe)
   endpoint <- sprintf('https://%s.r-universe.dev', universe)
-  packages <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-x86_64/contrib/4.3')), verbose = FALSE)
-  packages <- subset(packages, as.Date(packages$Built$Date) < '2024-01-19')
-  binaries <- jsonlite::stream_in(url(paste0(endpoint, '/bin/macosx/big-sur-arm64/contrib/4.3')), verbose = FALSE)
-  failures <- jsonlite::stream_in(url(paste0(endpoint, '/stats/failures')), verbose = FALSE)
-  #failures <- subset(failures, as.Date(failures[['_published']]) > '2024-01-11')
-  missing <- setdiff(packages$Package, c(binaries$Package, failures$Package))
-  sapply(missing, function(pkg){
+  binaries <- jsonlite::stream_in(url(paste0(endpoint, '/bin/linux/noble-aarch64/4.6/src/contrib?fields=_usedby')), verbose = FALSE)
+  df <- as.data.frame(binaries)
+  if(length(df$Built)){
+    df <- binaries[is.na(df$Built$R),]
+  }
+  if(length(df[['_usedby']])){
+    df <- df[order(df[['_usedby']], decreasing = TRUE),]
+    df <- df[df[['_usedby']] > 0,]
+  }
+  sapply(df$Package, function(pkg){
     rebuild_one(paste0('r-universe/', universe), pkg)
-    Sys.sleep(10)
+    Sys.sleep(3)
   })
 }
 
@@ -240,7 +243,7 @@ rebuild_missing_arm64 <- function(universe = 'ropensci'){
 rebuild_all_missing_arm64 <- function(){
   orgstats <- jsonlite::stream_in(url('https://r-universe.dev/stats/universes'), verbose = FALSE)
   orgstats$count <- sapply(orgstats$packages, length)
-  universes <- setdiff(orgstats$universe[order(orgstats$count, decreasing = TRUE)], 'cran')
+  universes <- setdiff(orgstats$universe[order(orgstats$count, decreasing = TRUE)], c('bioc', 'cran'))
   out <- sapply(universes, function(x){
     try(rebuild_missing_arm64(x))
   })
