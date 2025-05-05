@@ -42,7 +42,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   delete_old_files(Sys.Date() - 100)
 }
 
-trigger_full_rebuilds <- function(builds, rebuild_days, delay = 5){
+trigger_full_rebuilds <- function(builds, rebuild_days, delay = 10){
   do_rebuild <- (builds$age > 0) & (builds$age %% rebuild_days == 0)
   average_size <- round(length(do_rebuild) / rebuild_days)
   min_rebuilds <- average_size - 100
