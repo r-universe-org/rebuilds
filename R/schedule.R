@@ -22,21 +22,14 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   retry_urls <- unique(c(retry_failures[['_buildurl']], retry_sources[['_buildurl']]))
   lapply(retry_urls, retry_run, max_age = retry_days)
 
-  # Fresh full rebuilds (not just retries)
-  builds <- rbind(failures[c('user', 'package', 'age')], sources[c('user', 'package', 'age')])
-
-  cat("=== NON CRAN universes ===\n\n")
-  notcran <- subset(builds, user != 'cran')
-  trigger_full_rebuilds(notcran, rebuild_days = rebuild_days)
-
   # Workaround for GitHub problems
   if(curl::curl_fetch_memory('https://github.com/cran')$status != 200){
     stop("https://github.com/cran unavailable")
   }
 
-  cat("=== CRAN universe ===\n\n")
-  oncran <- subset(builds, user == 'cran')
-  trigger_full_rebuilds(oncran, rebuild_days = rebuild_days)
+  # Fresh full rebuilds (not just retries)
+  builds <- rbind(failures[c('user', 'package', 'age')], sources[c('user', 'package', 'age')])
+  trigger_full_rebuilds(builds, rebuild_days = rebuild_days)
 
   # Delete files older than 100 days
   delete_old_files(Sys.Date() - 100)
