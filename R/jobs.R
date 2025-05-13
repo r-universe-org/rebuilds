@@ -56,15 +56,12 @@ rebuild_all_webassembly <- function(){
 }
 
 redeploy_everything <- function(){
-  files <- jsonlite::stream_in(url("https://bioc.r-universe.dev/stats/files?type=src&fields=_buildurl"))
-  urls <- rev(unique(files[['_buildurl']]))
-  #lapply(urls, function(url){
-  #  message(url)
-  #  tryCatch(rerun_one_job(url, 'Deploy to package server', skip_success = FALSE), error = wait_for_api_limit_reset)
-  #})
-  failures <- jsonlite::stream_in(url("https://bioc.r-universe.dev/stats/files?type=failure&fields=_buildurl"))
-  urls <- unique(failures[['_buildurl']])
-  lapply(urls, function(url){
+  files <- read_ndjson("https://r-universe.dev/stats/files?type=src&fields=_buildurl")
+  files <- files[order(files$published),]
+  failures <- read_ndjson("https://r-universe.dev/stats/files?type=failure&fields=_buildurl")
+  failures <- failures[order(failures$published),]
+  all_urls <- unique(c(files[['_buildurl']], failures[['_buildurl']]))
+  lapply(all_urls, function(url){
     message(url)
     tryCatch(rerun_one_job(url, 'Deploy to package server', skip_success = FALSE), error = message)
   })
