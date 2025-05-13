@@ -79,6 +79,11 @@ redeploy_one_for_each <- function(){
   })
 }
 
+new_server_files <- function(){
+  h <- curl::new_handle(resolve = "*:443:165.227.211.221")
+  jsonlite::stream_in(curl::curl("https://r-universe.dev/stats/files?type=src&fields=_buildurl", handle = h))
+}
+
 rebuild_ropensci_docs <- function(){
   rerun_one_job_for_universe('ropensci', 'pkgdown')
 }
