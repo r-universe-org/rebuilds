@@ -582,3 +582,17 @@ rebuild_old_bioc <- function(delay = 900){
     }
   }
 }
+
+#' @export
+#' @rdname rebuilds
+rebuild_graphics_packages <- function(){
+  res <- gh::gh('/search/code?per_page=100&q=R_GE_checkVersionOrDie+user:cran')
+  pkgs <- sapply(res$items, \(x) x$repository$name)
+  for(pkg in pkgs){
+    rebuild_package('cran', pkg)
+    search <- jsonlite::fromJSON(paste0('https://r-universe.dev/api/search?limit=200&all=true&q=package:', pkg))
+    lapply(search$results[['_user']], function(user){
+      if(user != 'cran') rebuild_package(user, pkg)
+    })
+  }
+}
