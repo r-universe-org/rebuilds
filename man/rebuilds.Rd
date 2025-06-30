@@ -33,6 +33,7 @@
 \alias{remove_all_packages_with_remotes}
 \alias{rebuild_old_bioc}
 \alias{rebuild_graphics_packages}
+\alias{trigger_revdeps}
 \title{Rebuild packages}
 \usage{
 trigger_rebuilds(repository = "r-universe/jeroen", delete_after = 90)
@@ -98,6 +99,8 @@ remove_all_packages_with_remotes()
 rebuild_old_bioc(delay = 900)
 
 rebuild_graphics_packages()
+
+trigger_revdeps(package)
 }
 \arguments{
 \item{repository}{name of the github repository}

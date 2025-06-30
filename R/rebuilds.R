@@ -596,3 +596,21 @@ rebuild_graphics_packages <- function(){
     })
   }
 }
+
+#' @export
+#' @rdname rebuilds
+trigger_revdeps <- function(package){
+  universe <- Sys.getenv("UNIVERSE_NAME")
+  if(nchar(universe) == 0) stop("No envvar UNIVERSE_NAME found")
+  repo <- sprintf('https://%s.r-universe.dev', universe)
+  revdeps <- tools::package_dependencies(package, reverse = TRUE, db = available.packages(repos = repo))[[package]]
+  if(!length(revdeps)){
+    print_message("No packages in %s depend on %s", universe, package)
+  }
+  if(length(revdeps) > 50){
+    stop("More than 50 revdeps found. That seems wrong?")
+  }
+  for(dep in revdeps){
+    rebuild_one(paste0("r-universe/", universe), dep)
+  }
+}
