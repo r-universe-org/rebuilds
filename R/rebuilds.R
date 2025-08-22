@@ -570,8 +570,9 @@ remove_all_packages_with_remotes <- function(){
 #' @rdname rebuilds
 rebuild_all_recent_failures <- function(){
   universes <- gh('/orgs/r-universe/repos', .limit = Inf)
-  lapply(universes, function(universe){
-    try(rebuild_recent_failures(universe))
+  lapply(universes, function(x){
+    try(rebuild_recent_failures(x$name))
+    Sys.sleep(10)
   })
 }
 
