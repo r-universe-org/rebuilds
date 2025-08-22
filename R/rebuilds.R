@@ -581,7 +581,7 @@ rebuild_recent_failures <- function(universe){
   failures <- Filter(function(x){
     as.Date(substring(x$run_started_at, 1,10)) >= "2025-08-20" &&
       identical(x$conclusion, 'failure') &&
-      !grepl("rebuild", x$head_commit$message)
+      !grepl("rebuild", x$name)
   }, runs$workflow_runs)
   pkgs <- unique(sapply(failures, function(x){strsplit(x$head_commit$message, " ")[[1]][1]}))
   lapply(pkgs, function(pkg){
