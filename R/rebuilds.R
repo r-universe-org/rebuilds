@@ -577,7 +577,7 @@ rebuild_all_recent_failures <- function(){
 }
 
 rebuild_recent_failures <- function(universe){
-  runs <- gh::gh('/repos/r-universe/{universe}/actions/runs', universe = universe)
+  runs <- gh::gh('/repos/r-universe/{universe}/actions/runs', universe = universe, per_page = 100)
   failures <- Filter(function(x){
     as.Date(substring(x$run_started_at, 1,10)) >= "2025-08-20" &&
       identical(x$conclusion, 'failure') &&
