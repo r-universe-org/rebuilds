@@ -583,7 +583,7 @@ rebuild_recent_failures <- function(universe){
       identical(x$conclusion, 'failure') &&
       !grepl("rebuild", x$name)
   }, runs$workflow_runs)
-  pkgs <- unique(sapply(failures, function(x){strsplit(x$head_commit$message, " ")[[1]][1]}))
+  pkgs <- unique(sapply(failures, function(x){strsplit(x$name, " ")[[1]][1]}))
   lapply(pkgs, function(pkg){
     rebuild_one(paste0('r-universe/', universe), pkg)
   })
