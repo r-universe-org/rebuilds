@@ -565,6 +565,28 @@ remove_all_packages_with_remotes <- function(){
   })
 }
 
+
+#' @export
+#' @rdname rebuilds
+rebuild_all_recent_failures <- function(){
+  universes <- gh('/orgs/r-universe/repos', .limit = Inf)
+  lapply(universes, function(universe){
+    try(rebuild_recent_failures(universe))
+  })
+}
+
+rebuild_recent_failures <- function(universe){
+  runs <- gh::gh('/repos/r-universe/{universe}/actions/runs', universe = universe)
+  failures <- Filter(function(x){
+    as.Date(substring(x$run_started_at, 1,10)) >= "2025-08-20" && identical(x$conclusion, 'failure')
+  }, runs$workflow_runs)
+  pkgs <- unique(sapply(failures, function(x){strsplit(x$head_commit$message, " ")[[1]][1]}))
+  lapply(pkgs, function(pkg){
+    rebuild_one(paste0('r-universe/', universe), pkg)
+  })
+}
+
+
 #' @export
 #' @rdname rebuilds
 rebuild_old_bioc <- function(delay = 900){
