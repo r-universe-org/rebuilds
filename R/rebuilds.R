@@ -437,6 +437,14 @@ delete_all_old_binaries_fast <- function(){
     x <- as.list(linux[i,])
     delete_one(x$user, x$package, x$version, 'linux', '4.4')
   }
+
+  wasm <- list_all_packages(type = 'wasm')
+  wasm <- subset(wasm, grepl("^4.4", wasm$r))
+  for(i in seq_len(nrow(wasm))){
+    x <- as.list(wasm[i,])
+    delete_one(x$user, x$package, x$version, 'wasm', '4.4')
+  }
+
 }
 
 delete_old_builds <- function(before = '2021-04-01'){
