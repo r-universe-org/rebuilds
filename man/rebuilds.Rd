@@ -20,6 +20,7 @@
 \alias{rebuild_all_missing_sources}
 \alias{rebuild_all_missing_binaries}
 \alias{cancel_queued_builds}
+\alias{cancel_pending_builds}
 \alias{cancel_all_queued_builds}
 \alias{delete_environments}
 \alias{delete_all_environments}
@@ -31,6 +32,7 @@
 \alias{rebuild_universe_remotes_only}
 \alias{remove_packages_with_remotes}
 \alias{remove_all_packages_with_remotes}
+\alias{rebuild_all_recent_failures}
 \alias{rebuild_old_bioc}
 \alias{rebuild_graphics_packages}
 \alias{trigger_revdeps}
@@ -74,6 +76,8 @@ rebuild_all_missing_binaries()
 
 cancel_queued_builds(universe = "ropensci")
 
+cancel_pending_builds(universe = "ropensci")
+
 cancel_all_queued_builds()
 
 delete_environments(universe = "ropensci")
@@ -95,6 +99,8 @@ rebuild_universe_remotes_only(universe)
 remove_packages_with_remotes(org)
 
 remove_all_packages_with_remotes()
+
+rebuild_all_recent_failures()
 
 rebuild_old_bioc(delay = 900)
 

@@ -327,7 +327,19 @@ cancel_queued_builds <- function(universe = 'ropensci'){
   runs <- gh::gh(sprintf('/repos/r-universe/%s/actions/runs', universe), status = 'queued', .limit = 1000)
   lapply(runs$workflow_runs, function(run){
     cat("Cancelling build", run$id, "in", universe, "\n")
-    url <- sprintf('/repos/r-universe/%s/actions/runs/%d/cancel', universe, run$id)
+    url <- sprintf('/repos/r-universe/%s/actions/runs/%s/cancel', universe, as.character(run$id))
+    gh::gh(url, .method = 'POST')
+  })
+}
+
+#' @export
+#' @rdname rebuilds
+cancel_pending_builds <- function(universe = 'ropensci'){
+  # limit here looks at .limit most recent runs, and then filters by status. So it needs to be high.
+  runs <- gh::gh(sprintf('/repos/r-universe/%s/actions/runs', universe), status = 'pending', .limit = 1000)
+  lapply(runs$workflow_runs, function(run){
+    cat("Cancelling build", run$id, "in", universe, "\n")
+    url <- sprintf('/repos/r-universe/%s/actions/runs/%s/cancel', universe, as.character(run$id))
     gh::gh(url, .method = 'POST')
   })
 }
