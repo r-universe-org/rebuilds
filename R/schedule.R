@@ -11,7 +11,7 @@ trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
   dupes <- paste(sources$user, sources$package) %in% paste(failures$user, failures$package)
   sources <- sources[!dupes,]
   sources$hasfail <- vapply(sources[['_jobs']], function(jobs){
-    any(jobs$check == 'FAIL' & !grepl('wasm', jobs$config))
+    any(jobs$check == 'FAIL' & !grepl('wasm|bioc', jobs$config))
   }, logical(1))
   failures$age <- as.numeric(Sys.Date() - as.Date(failures$published))
   sources$age <- as.numeric(Sys.Date() - as.Date(sources$published))
