@@ -645,8 +645,8 @@ rebuild_graphics_packages <- function(){
 #' @export
 #' @rdname rebuilds
 trigger_revdeps <- function(package){
-  universe <- Sys.getenv("UNIVERSE_NAME")
-  if(nchar(universe) == 0) stop("No envvar UNIVERSE_NAME found")
+  universe <- Sys.getenv("UNIVERSE")
+  if(nchar(universe) == 0) stop("No envvar UNIVERSE found")
   repo <- sprintf('https://%s.r-universe.dev', universe)
   revdeps <- tools::package_dependencies(package, reverse = TRUE, db = available.packages(repos = repo))[[package]]
   if(!length(revdeps)){
