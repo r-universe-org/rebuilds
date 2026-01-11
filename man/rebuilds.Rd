@@ -16,7 +16,6 @@
 \alias{rebuild_missing_arm64}
 \alias{rebuild_all_missing_arm64}
 \alias{rebuild_missing_sources}
-\alias{rebuild_mixed_case_login}
 \alias{rebuild_all_missing_sources}
 \alias{rebuild_all_missing_binaries}
 \alias{cancel_queued_builds}
@@ -67,8 +66,6 @@ rebuild_missing_arm64(universe = "ropensci")
 rebuild_all_missing_arm64()
 
 rebuild_missing_sources(universe = "ropensci")
-
-rebuild_mixed_case_login()
 
 rebuild_all_missing_sources()
 

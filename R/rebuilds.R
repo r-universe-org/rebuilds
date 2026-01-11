@@ -46,7 +46,7 @@ retry_failures <- function(universe = NULL, rebuild = FALSE){
 #' @export
 #' @rdname rebuilds
 retry_everything <- function(universe){
-  endpoint <- sprintf('https://%s.r-universe.dev/stats/files?fields=_buildurl', universe)
+  endpoint <- sprintf('https://%s.r-universe.dev/api/files?fields=_buildurl', universe)
   df <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   failures <- df[df$type == 'failure',]
   sources <- df[df$type == 'src' & !(df$package %in% failures$package),]
@@ -73,7 +73,7 @@ rebuild_vignettes <- function(universe = 'jeroen'){
 #' @rdname rebuilds
 #' @param fields extra fields you want to get
 list_all_packages <- function(fields = '_upstream', type = 'src'){
-  endpoint <- sprintf('https://r-universe.dev/stats/files?type=%s&fields=%s', type, paste(fields, collapse = ','))
+  endpoint <- sprintf('https://r-universe.dev/api/files?type=%s&fields=%s', type, paste(fields, collapse = ','))
   jsonlite::stream_in(url(endpoint))
 }
 
@@ -104,7 +104,7 @@ rebuild_all_fortran <- function(){
 #' @rdname rebuilds
 rebuild_oldies <- function(universe, before = Sys.Date()-32, types = c('src', 'failure')){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
-  endpoint <- sprintf('https://%sr-universe.dev/stats/files?before=%s', subdomain, before)
+  endpoint <- sprintf('https://%sr-universe.dev/api/files?before=%s', subdomain, before)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   df <- oldies[oldies$type %in% types,]
   if(length(universe))
@@ -133,7 +133,7 @@ rebuild_recent_builds <- function(hours = 8){
 #' @rdname rebuilds
 rebuild_failed_vignettes <- function(universe = NULL){
   subdomain <- paste(sprintf('%s.', universe), collapse = '')
-  endpoint <- sprintf('https://%sr-universe.dev/stats/files?type=src&fields=_status', subdomain)
+  endpoint <- sprintf('https://%sr-universe.dev/api/files?type=src&fields=_status', subdomain)
   oldies <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   df <- oldies[oldies[['_status']] == 'failure',]
   if(length(universe))
@@ -149,7 +149,7 @@ rebuild_failed_vignettes <- function(universe = NULL){
 #' @export
 #' @rdname rebuilds
 rebuild_all_missing_field <- function(field = '_jobs'){
-  endpoint <- sprintf('https://r-universe.dev/stats/files?type=src&fields=%s', field)
+  endpoint <- sprintf('https://r-universe.dev/api/files?type=src&fields=%s', field)
   files <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   nojobs <- sapply(files[['_jobs']], is.null)
   df <- files[nojobs,]
@@ -284,22 +284,6 @@ rebuild_missing_sources <- function(universe = 'ropensci'){
 
 #' @export
 #' @rdname rebuilds
-rebuild_mixed_case_login <- function(){
-  checks <- jsonlite::stream_in(url('https://r-universe.dev/stats/checks?limit=100000'), verbose = FALSE)
-  different <- vapply(checks$runs, function(x){any(x$builder$maintainerlogin != tolower(x$builder$maintainerlogin))}, logical(1))
-  logins <- vapply(checks$runs, function(x){as.character(x$builder$maintainerlogin[1])}, character(1))
-  mixed <- which(different)
-  lapply(mixed, function(i){
-    pkg <- checks$package[i]
-    universe <- checks$user[i]
-    cat(sprintf("Rebuilding package %s/%s by %s\n", universe, pkg, logins[i]))
-    rebuild_one(paste0('r-universe/', universe), pkg)
-  })
-  invisible()
-}
-
-#' @export
-#' @rdname rebuilds
 rebuild_all_missing_sources <- function(){
   orgstats <- jsonlite::stream_in(url('https://r-universe.dev/stats/universes'), verbose = FALSE)
   all_orgs <- rev(orgstats$universe)
@@ -312,7 +296,7 @@ rebuild_all_missing_sources <- function(){
 #' @export
 #' @rdname rebuilds
 rebuild_all_missing_binaries <- function(){
-  orgstats <- jsonlite::stream_in(url('https://r-universe.dev/stats/universes'), verbose = FALSE)
+  orgstats <- jsonlite::stream_in(url('https://r-universe.dev/api/universes'), verbose = FALSE)
   total <- 0
   lapply(orgstats$universe, function(orgname){
     total <<- total + length(rebuild_missing_binaries(orgname))
@@ -459,17 +443,6 @@ delete_all_old_binaries_fast <- function(){
 
 }
 
-delete_old_builds <- function(before = '2021-04-01'){
-  checks <- jsonlite::stream_in(url('https://r-universe.dev/stats/checks?limit=9999999'), verbose = FALSE)
-  checks$builddate <- structure(sapply(checks$runs, function(df){df$builder$date[1]}), class = class(Sys.time()))
-  oldies <- checks[checks$builddate < before & checks$user != 'hrbrmstr_gitlab.com',]
-  for(i in seq_along(oldies$user)){
-    cat(sprintf("Deleting %s from %s\n", oldies$package[i], oldies$user[i]))
-    delete_one(oldies$user[i], oldies$package[i])
-    rebuild_one(paste0('r-universe/', oldies$user[i]), oldies$package[i])
-  }
-}
-
 #' @import gert
 package_stats <- function(monorepo){
   repo <- git_clone(monorepo, tempfile())
@@ -613,7 +586,7 @@ rebuild_recent_failures <- function(universe){
 #' @export
 #' @rdname rebuilds
 rebuild_old_bioc <- function(delay = 900){
-  con <- url('https://r-universe.dev/stats/files?fields=_bioconductor&type=src&nocache2')
+  con <- url('https://r-universe.dev/api/files?fields=_bioconductor&type=src&nocache2')
   files <- jsonlite::stream_in(con, verbose = FALSE)
   has_old_bioc <- as.logical(sapply(files[['_bioconductor']]$devel$bioc, length))
   rebuilds <- files[has_old_bioc,]

@@ -8,7 +8,7 @@ delete_old_files <- function(before = '2021-12-03'){
   # Some input validation
   userpwd <- Sys.getenv("CRANLIKEPWD", NA)
   if(is.na(userpwd)) stop("No CRANLIKEPWD set, cannot deploy")
-  df <- jsonlite::stream_in(url(paste0('https://r-universe.dev/stats/files?before=', before, '&nocache=', runif(1))), verbose = FALSE)
+  df <- jsonlite::stream_in(url(paste0('https://r-universe.dev/api/files?before=', before, '&nocache=', runif(1))), verbose = FALSE)
 
   message("Doing to delete ", nrow(df), " files")
   print(df, row.names = FALSE)

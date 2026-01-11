@@ -24,7 +24,7 @@ get_job_info <- function(url, name){
 }
 
 rerun_one_job_for_universe <- function(universe, job_name, skip_success = FALSE){
-  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/files?type=src&limit=9999999&fields=_buildurl", universe)))
+  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/api/files?type=src&limit=9999999&fields=_buildurl", universe)))
   urls <- files[['_buildurl']]
   lapply(urls, function(url){
     try(rerun_one_job(url, job_name, skip_success = skip_success))
@@ -33,7 +33,7 @@ rerun_one_job_for_universe <- function(universe, job_name, skip_success = FALSE)
 }
 
 rerun_all_r_devel_for_universe <- function(universe = 'cran', type = 'linux', version = '4.6.0'){
-  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/stats/files?limit=9999999&fields=_buildurl,_usedby", universe)))
+  files <- jsonlite::stream_in(url(sprintf("https://%s.r-universe.dev/api/files?limit=9999999&fields=_buildurl,_usedby", universe)))
   skiplist <- files[files$r == '4.6.0' & files$type=='linux','package']
   sources <- files[files$type=='src',]
   sources <- sources[is.na(match(sources$package, skiplist)),]
@@ -46,7 +46,7 @@ rerun_all_r_devel_for_universe <- function(universe = 'cran', type = 'linux', ve
 }
 
 rebuild_all_webassembly <- function(){
-  files <- jsonlite::stream_in(url("https://r-universe.dev/stats/files?type=wasm&before=2024-09-11T19:00:00.000Z&fields=_buildurl,Packaged.Date"))
+  files <- jsonlite::stream_in(url("https://r-universe.dev/api/files?type=wasm&before=2024-09-11T19:00:00.000Z&fields=_buildurl,Packaged.Date"))
   files$age <- Sys.Date() - as.Date(rebuilds:::parse_time(files$Packaged$Date))
   files <- subset(files, age < 30 & r > '4.4')
   urls <- unique(files[['_buildurl']])
@@ -56,9 +56,9 @@ rebuild_all_webassembly <- function(){
 }
 
 redeploy_everything <- function(){
-  files <- read_ndjson("https://r-universe.dev/stats/files?type=src&fields=_buildurl")
+  files <- read_ndjson("https://r-universe.dev/api/files?type=src&fields=_buildurl")
   files <- files[order(files$published),]
-  failures <- read_ndjson("https://r-universe.dev/stats/files?type=failure&fields=_buildurl")
+  failures <- read_ndjson("https://r-universe.dev/api/files?type=failure&fields=_buildurl")
   failures <- failures[order(failures$published),]
   all_urls <- unique(c(files[['_buildurl']], failures[['_buildurl']]))
   lapply(all_urls, function(url){
@@ -68,7 +68,7 @@ redeploy_everything <- function(){
 }
 
 redeploy_one_for_each <- function(){
-  files <- jsonlite::stream_in(url("https://r-universe.dev/stats/files?type=src&fields=_buildurl"))
+  files <- jsonlite::stream_in(url("https://r-universe.dev/api/files?type=src&fields=_buildurl"))
   files <- files[as.Date(files$published) > '2024-11-13',]
   files <- files[order(files$published, decreasing = TRUE),]
   files <- files[!duplicated(files$user),]
@@ -81,7 +81,7 @@ redeploy_one_for_each <- function(){
 
 new_server_files <- function(){
   h <- curl::new_handle(resolve = "*:443:165.227.211.221")
-  jsonlite::stream_in(curl::curl("https://r-universe.dev/stats/files?type=src&fields=_buildurl", handle = h))
+  jsonlite::stream_in(curl::curl("https://r-universe.dev/api/files?type=src&fields=_buildurl", handle = h))
 }
 
 rebuild_ropensci_docs <- function(){

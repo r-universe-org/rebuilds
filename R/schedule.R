@@ -6,8 +6,8 @@
 #' @param retry_days number of days to retry failures builds
 #' @param rebuild_days number of days after which to do a full fresh rebuild
 trigger_all_rebuilds <- function(retry_days = 3, rebuild_days = 30){
-  failures <- read_ndjson('https://r-universe.dev/stats/files?type=failure&fields=_buildurl')
-  sources <- read_ndjson('https://r-universe.dev/stats/files?type=src&fields=_buildurl,_jobs')
+  failures <- read_ndjson('https://r-universe.dev/api/files?type=failure&fields=_buildurl')
+  sources <- read_ndjson('https://r-universe.dev/api/files?type=src&fields=_buildurl,_jobs')
   dupes <- paste(sources$user, sources$package) %in% paste(failures$user, failures$package)
   sources <- sources[!dupes,]
   sources$hasfail <- vapply(sources[['_jobs']], function(jobs){
