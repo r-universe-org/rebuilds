@@ -118,5 +118,6 @@ print_message <- function(...){
 }
 
 read_ndjson <- function(x){
-  jsonlite::stream_in(url(paste0(x, '&nocache=', rnorm(1))), verbose = FALSE)
+  # Use curl for compression and timeout defaults
+  jsonlite::stream_in(curl::curl(paste0(x, '&nocache=', rnorm(1))), verbose = FALSE)
 }
