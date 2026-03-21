@@ -413,17 +413,17 @@ delete_old_binaries <- function(universe){
 #' @rdname rebuilds
 delete_all_old_binaries_fast <- function(){
   macos <- list_all_packages(type = 'mac')
-  macos <- subset(macos, grepl("^4.3", macos$r))
+  macos <- subset(macos, grepl("^4.4", macos$r))
   for(i in seq_len(nrow(macos))){
     x <- as.list(macos[i,])
-    delete_one(x$user, x$package, x$version, 'mac', '4.3')
+    delete_one(x$user, x$package, x$version, 'mac', '4.4')
   }
 
   windows <- list_all_packages(type = 'win')
-  windows <- subset(windows, grepl("^4.3", windows$r))
+  windows <- subset(windows, grepl("^4.4", windows$r))
   for(i in seq_len(nrow(windows))){
     x <- as.list(windows[i,])
-    delete_one(x$user, x$package, x$version, 'win', '4.3')
+    delete_one(x$user, x$package, x$version, 'win', '4.4')
   }
 
   # For Linux we dont do r-oldrel, so delete one release up
