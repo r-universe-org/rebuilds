@@ -428,10 +428,10 @@ delete_all_old_binaries_fast <- function(){
 
   # For Linux we dont do r-oldrel, so delete one release up
   linux <- list_all_packages(type = 'linux')
-  linux <- subset(linux, grepl("^4.4", linux$r))
+  linux <- subset(linux, grepl("^4.5", linux$r))
   for(i in seq_len(nrow(linux))){
     x <- as.list(linux[i,])
-    delete_one(x$user, x$package, x$version, 'linux', '4.4')
+    delete_one(x$user, x$package, x$version, 'linux', '4.5')
   }
 
   wasm <- list_all_packages(type = 'wasm')
