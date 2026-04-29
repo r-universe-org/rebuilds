@@ -50,7 +50,7 @@ retry_everything <- function(universe){
   df <- jsonlite::stream_in(url(endpoint), verbose = FALSE)
   failures <- df[df$type == 'failure',]
   sources <- df[df$type == 'src' & !(df$package %in% failures$package),]
-  buildurls <- c(failures[['_buildurl']], sources[['_buildurl']])
+  buildurls <- c(rev(failures[['_buildurl']]),rev(sources[['_buildurl']]))
   lapply(buildurls, retry_run)
 }
 
