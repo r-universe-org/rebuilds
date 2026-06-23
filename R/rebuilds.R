@@ -650,8 +650,14 @@ rebuild_by_linux_distro <- function(universe = 'cran', distro = 'noble'){
   rebuild <- rebuild[order(rebuild$revdep, decreasing = TRUE),]
   for(pkg in rebuild$package) {
     rebuild_one(paste0('r-universe/', universe), pkg)
-    Sys.sleep(5)
+    Sys.sleep(30)
   }
+}
+
+rebuild_by_linux_distro_all <- function(){
+  universes <- jsonlite::fromJSON('https://r-universe.dev/api/universes')
+  universes <- universes[order(universes$packages, decreasing = TRUE),]
+  lapply(universes$universe, rebuild_by_linux_distro)
 }
 
 recently_updated_universes <- function(){
