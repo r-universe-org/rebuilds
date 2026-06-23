@@ -35,6 +35,7 @@
 \alias{rebuild_old_bioc}
 \alias{rebuild_graphics_packages}
 \alias{trigger_revdeps}
+\alias{rebuild_by_linux_distro}
 \title{Rebuild packages}
 \usage{
 trigger_rebuilds(repository = "r-universe/jeroen", delete_after = 90)
@@ -104,6 +105,8 @@ rebuild_old_bioc(delay = 900)
 rebuild_graphics_packages()
 
 trigger_revdeps(package)
+
+rebuild_by_linux_distro(universe = "cran", distro = "noble")
 }
 \arguments{
 \item{repository}{name of the github repository}

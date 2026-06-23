@@ -633,6 +633,21 @@ trigger_revdeps <- function(package){
   }
 }
 
+#' @export
+#' @rdname rebuilds
+rebuild_by_linux_distro <- function(universe = 'cran', distro = 'noble'){
+  endpoint <- sprintf('https://%s.r-universe.dev/api/files?type=src&fields=_distro,_usedby,NeedsCompilation,_progress_url', universe)
+  df <- rebuilds:::read_ndjson(endpoint)
+  if(length(df$`_progress_url`)){
+    df <- df[is.na(df$`_progress_url`) | df$published != Sys.Date(), ]
+  }
+  df <- df[df$NeedsCompilation == 'yes' & df$`_distro` == distro & df$`_usedby` > 0,]
+  df <- df[order(df$`_usedby`, decreasing = TRUE),]
+  for(pkg in df$package) {
+    rebuild_package(paste0('r-universe/', universe), pkg)
+  }
+}
+
 recently_updated_universes <- function(){
   res <- gh::gh('/users/r-universe/repos', per_page = 100, .limit = 1e5)
   names <- tolower(vapply(res, function(x){x$name}, character(1)))
