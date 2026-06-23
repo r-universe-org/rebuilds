@@ -636,15 +636,21 @@ trigger_revdeps <- function(package){
 #' @export
 #' @rdname rebuilds
 rebuild_by_linux_distro <- function(universe = 'cran', distro = 'noble'){
-  endpoint <- sprintf('https://%s.r-universe.dev/api/files?type=src&fields=_distro,_usedby,NeedsCompilation,_progress_url', universe)
+  endpoint <- sprintf('https://%s.r-universe.dev/api/files?type=src&fields=_distro,_usedby,NeedsCompilation,_progress_url&rnd=1', universe)
   df <- rebuilds:::read_ndjson(endpoint)
   if(length(df$`_progress_url`)){
     df <- df[is.na(df$`_progress_url`) | df$published != Sys.Date(), ]
   }
-  df <- df[df$NeedsCompilation == 'yes' & df$`_distro` == distro & df$`_usedby` > 0,]
-  df <- df[order(df$`_usedby`, decreasing = TRUE),]
-  for(pkg in df$package) {
-    rebuild_package(paste0('r-universe/', universe), pkg)
+  df <- df[df$NeedsCompilation == 'yes' & df$`_distro` == distro,]
+  db <- available.packages(repos = sprintf('https://%s.r-universe.dev', universe))
+  revdeps <- tools::package_dependencies(db = db, reverse = TRUE, which = 'most')
+  numdeps <- sapply(revdeps, length)
+  df$revdeps <- numdeps[df$package]
+  rebuild <- df[df$revdeps > 0,]
+  rebuild <- rebuild[order(rebuild$revdep, decreasing = TRUE),]
+  for(pkg in rebuild$package) {
+    rebuild_one(paste0('r-universe/', universe), pkg)
+    Sys.sleep(5)
   }
 }
 
