@@ -68,10 +68,11 @@ redeploy_everything <- function(){
 }
 
 redeploy_to_cdn  <- function(){
-  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?type=src&fields=_fileid,_buildurl'))
-  df <- df[grepl("2026-07-", df$published) & df$user != 'bioc-release',]
-  df <- df[!grepl('https://', df$`_fileid`),]
-  lapply(df$`_buildurl`, function(url){
+  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl&rnd=123'))
+  df <- df[grepl("2026-07-", df$published),]
+  df <- df[!grepl('https://', df$`_fileid`) & !grepl("^bioc", df$user),]
+  rebuilds <- unique(df$`_buildurl`)
+  lapply(rebuilds, function(url){
     message(url)
     tryCatch(rerun_one_job(url, 'Deploy and report', skip_success = FALSE), error = message)
   })
