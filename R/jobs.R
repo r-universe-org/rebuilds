@@ -68,7 +68,8 @@ redeploy_everything <- function(){
 }
 
 redeploy_to_cdn  <- function(){
-  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl&rnd=123'))
+  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl&rnd=12435'))
+  df <- df[df$type != 'failure',]
   df <- df[grepl("2026-07-", df$published),]
   df <- df[!grepl('https://', df$`_fileid`) & !grepl("^bioc", df$user),]
   rebuilds <- unique(df$`_buildurl`)
