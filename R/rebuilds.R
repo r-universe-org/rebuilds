@@ -111,7 +111,7 @@ rebuild_oldies <- function(universe, before = Sys.Date()-32, types = c('src', 'f
     cat(sprintf("Rebuilding %d packages in: %s\n", nrow(df), universe))
   for(i in sample(seq_len(nrow(df)))){
     cat(sprintf('\r[%d] ', i))
-    rebuild_one(paste0('r-universe/', df$user[i]), df$package[i])
+    try(rebuild_one(paste0('r-universe/', df$user[i]), df$package[i]))
     for(sec in rev(seq_len(delay)-1)){
       cat(sprintf('\r waiting... (%d) ', sec))
       Sys.sleep(1)
