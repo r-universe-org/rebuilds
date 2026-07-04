@@ -68,15 +68,18 @@ redeploy_everything <- function(){
 }
 
 redeploy_to_cdn  <- function(){
-  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl&rnd=12435'))
-  df <- df[df$type != 'failure',]
-  df <- df[grepl("2026-07-", df$published),]
-  df <- df[!grepl('https://', df$`_fileid`) & !grepl("^bioc", df$user),]
-  rebuilds <- unique(df$`_buildurl`)
-  lapply(rebuilds, function(url){
-    message(url)
-    tryCatch(rerun_one_job(url, 'Deploy and report', skip_success = FALSE), error = message)
-  })
+  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl'))
+  df <- df[df$type == 'src',]
+  df <- df[!grepl('https://', df$`_fileid`),]
+  df <- df[order(df$published, decreasing = TRUE),]
+  for(i in seq_along(df$user)){
+    info <- as.list(df[i,])
+    current <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/packages/%s', info$user, info$package))
+    if(current$`_buildurl` == info$`_buildurl`){
+      message(info$`_buildurl`)
+      tryCatch(rerun_one_job(info$`_buildurl`, 'Deploy and report', skip_success = FALSE), error = message)
+    }
+  }
 }
 
 redeploy_one_for_each <- function(){
