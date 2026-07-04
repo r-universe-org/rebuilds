@@ -68,7 +68,7 @@ redeploy_everything <- function(){
 }
 
 redeploy_to_cdn  <- function(){
-  df <- jsonlite::stream_in(url(paste0('https://r-universe.dev/api/files?fields=_fileid,_buildurl?nocache=', rnorm(1))))
+  df <- jsonlite::stream_in(url(paste0('https://r-universe.dev/api/files?fields=_fileid,_buildurl&nocache=', rnorm(1))))
   df <- df[df$type == 'src',]
   df <- df[!grepl('https://', df$`_fileid`),]
   df <- df[Sys.Date() - as.Date(df$published) < 31,]
@@ -76,13 +76,23 @@ redeploy_to_cdn  <- function(){
   for(i in seq_along(df$user)){
     info <- as.list(df[i,])
     try({
-      current <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/packages/%s', info$user, info$package))
-      if(current$`_buildurl` == info$`_buildurl`){
-        message(info$`_buildurl`)
+      message(info$`_buildurl`)
+      latest_url <- suppressWarnings(get_latest_url(info$user, info$package))
+      if(identical(info$`_buildurl`, latest_url)){
         rerun_one_job(info$`_buildurl`, 'Deploy and report', skip_success = FALSE)
+      } else {
+        message("url mismatch")
       }
     })
   }
+}
+
+get_latest_url <- function(user, package){
+  tryCatch(jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/packages/%s', user, package))$`_buildurl`, error = function(...){
+    message(sprintf("Checking if it is remote: %s/%s", user, package))
+    srcfiles <- jsonlite::stream_in(url(sprintf('https://%s.r-universe.dev/api/files?type=src&fields=_buildurl', user)), verbose = FALSE)
+    srcfiles[srcfiles$package == package, '_buildurl']
+  })
 }
 
 redeploy_one_for_each <- function(){
