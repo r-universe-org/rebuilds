@@ -68,9 +68,10 @@ redeploy_everything <- function(){
 }
 
 redeploy_to_cdn  <- function(){
-  df <- jsonlite::stream_in(url('https://r-universe.dev/api/files?fields=_fileid,_buildurl'))
+  df <- jsonlite::stream_in(url(paste0('https://r-universe.dev/api/files?fields=_fileid,_buildurl?nocache=', rnorm(1))))
   df <- df[df$type == 'src',]
   df <- df[!grepl('https://', df$`_fileid`),]
+  df <- df[Sys.Date() - as.Date(df$published) < 31,]
   df <- df[order(df$published, decreasing = TRUE),]
   for(i in seq_along(df$user)){
     info <- as.list(df[i,])
