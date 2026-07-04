@@ -74,11 +74,13 @@ redeploy_to_cdn  <- function(){
   df <- df[order(df$published, decreasing = TRUE),]
   for(i in seq_along(df$user)){
     info <- as.list(df[i,])
-    current <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/packages/%s', info$user, info$package))
-    if(current$`_buildurl` == info$`_buildurl`){
-      message(info$`_buildurl`)
-      tryCatch(rerun_one_job(info$`_buildurl`, 'Deploy and report', skip_success = FALSE), error = message)
-    }
+    try({
+      current <- jsonlite::fromJSON(sprintf('https://%s.r-universe.dev/api/packages/%s', info$user, info$package))
+      if(current$`_buildurl` == info$`_buildurl`){
+        message(info$`_buildurl`)
+        rerun_one_job(info$`_buildurl`, 'Deploy and report', skip_success = FALSE)
+      }
+    })
   }
 }
 
