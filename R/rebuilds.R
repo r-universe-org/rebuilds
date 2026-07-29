@@ -658,6 +658,23 @@ rebuild_by_linux_distro <- function(universe = 'cran', distro = 'noble'){
   }
 }
 
+
+#' @export
+#' @rdname rebuilds
+rebuild_missing_winarm <- function(universe = 'cran'){
+  avail <- row.names(available.packages(sprintf('https://%s.r-universe.dev/bin/windows/clang-aarch64/contrib/4.7/', universe)))
+  iswin <- row.names(available.packages(sprintf('https://%s.r-universe.dev/bin/windows/contrib/4.7/', universe)))
+  missing <- setdiff(iswin, avail)
+  db <- available.packages(repos = sprintf('https://%s.r-universe.dev', universe))
+  revdeps <- tools::package_dependencies(db = db, reverse = TRUE, which = 'most')
+  numdeps <- sapply(revdeps, length)
+  hasdeps <- names(revdeps)[numdeps>0]
+  needed <- intersect(hasdeps, missing)
+  for(pkg in needed) {
+    rebuild_one(paste0('r-universe/', universe), pkg)
+  }
+}
+
 rebuild_by_linux_distro_all <- function(){
   universes <- jsonlite::fromJSON('https://r-universe.dev/api/universes')
   universes <- universes[order(universes$packages, decreasing = TRUE),]
