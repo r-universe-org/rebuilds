@@ -663,11 +663,11 @@ rebuild_by_linux_distro <- function(universe = 'cran', distro = 'noble'){
 #' @rdname rebuilds
 rebuild_missing_winarm <- function(universe = 'cran'){
   avail <- row.names(available.packages(sprintf('https://%s.r-universe.dev/bin/windows/clang-aarch64/contrib/4.6/', universe)))
-  winrepo <- as.data.frame(available.packages(ignore_repo_cache = TRUE, sprintf('https://%s.r-universe.dev/bin/windows/contrib/4.7/', universe)))
+  winrepo <- as.data.frame(available.packages(ignore_repo_cache = TRUE, sprintf('https://%s.r-universe.dev/bin/windows/contrib/4.6/', universe)))
   winrepo <- winrepo[winrepo$NeedsCompilation == 'yes',]
   iswin <- row.names(winrepo)
   missing <- setdiff(iswin, avail)
-  db <- available.packages(repos = sprintf('https://%s.r-universe.dev', c('bioc', universe)))
+  db <- available.packages(repos = sprintf('https://%s.r-universe.dev', universe))
   revdeps <- tools::package_dependencies(db = db, reverse = TRUE, which = 'most')
   revdeps <- Filter(length, revdeps)
   numdeps <- sapply(revdeps, length)
