@@ -41,10 +41,6 @@ trigger_full_rebuilds <- function(builds, rebuild_days, delay = 8){
   average_size <- round(length(do_rebuild) / rebuild_days)
   min_rebuilds <- average_size - 100
   need_more <-  min_rebuilds - sum(do_rebuild)
-
-  # Disable for now
-  need_more <- FALSE
-
   if(need_more > 0){
     # Select some extra to get to 1/30th of the total to relieve the busy days
     weights <- get_oversize(as.character(builds$age), average_size)
