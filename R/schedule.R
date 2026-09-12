@@ -43,7 +43,7 @@ trigger_full_rebuilds <- function(builds, rebuild_days, delay = 8){
   need_more <-  min_rebuilds - sum(do_rebuild)
   if(need_more > 0){
     # Select some extra to get to 1/30th of the total to relieve the busy days
-    weights <- get_oversize(as.character(builds$age), average_size)
+    weights <- get_oversize(as.character(builds$age), average_size) * log(pmax.int(builds$age, 1))
     candidates <- which(!do_rebuild)
     do_rebuild[sample(candidates, need_more, prob = weights[candidates])] <- TRUE
   }
