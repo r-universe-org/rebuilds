@@ -624,6 +624,9 @@ rebuild_graphics_packages <- function(){
 trigger_revdeps <- function(package){
   universe <- Sys.getenv("UNIVERSE")
   if(nchar(universe) == 0) stop("No envvar UNIVERSE found")
+  if(grepl("bioc", universe)){
+    return(trigger_abi_revdeps(package, universe))
+  }
   repo <- sprintf('https://%s.r-universe.dev', universe)
   revdeps <- tools::package_dependencies(package, reverse = TRUE, db = available.packages(repos = repo))[[package]]
   if(!length(revdeps)){
@@ -635,6 +638,43 @@ trigger_revdeps <- function(package){
   for(dep in revdeps){
     rebuild_one(paste0("r-universe/", universe), dep)
   }
+}
+
+# Only rebuild the packages that import S4 classes or C functions of 'package'
+# which no longer match its current exports (from abitools, in the _abi field).
+trigger_abi_revdeps <- function(package, universe){
+  url <- sprintf('https://%s.r-universe.dev/api/packages?fields=_abi&limit=99999&nocache=%s', universe, rnorm(1))
+  pkgs <- jsonlite::fromJSON(url, simplifyVector = FALSE)
+  pkgs <- Filter(function(x) length(x[['_abi']]), pkgs)
+  names(pkgs) <- vapply(pkgs, function(x) x$Package, character(1))
+  if(!length(pkgs[[package]])){
+    print_message("No ABI data found for %s in %s, not triggering any rebuilds", package, universe)
+    return(invisible())
+  }
+  exports <- abi_hashes(pkgs[[package]][['_abi']]$exports)
+  clean <- character()
+  for(dep in setdiff(names(pkgs), package)){
+    imports <- abi_hashes(pkgs[[dep]][['_abi']]$imports)
+    imports <- imports[sub("(::|/).*$", "", names(imports)) == package]
+    if(!length(imports)) next
+    current <- unname(exports[names(imports)])
+    dirty <- is.na(current) | current != imports
+    if(!any(dirty)) {
+      clean <- c(clean, dep)
+      next
+    }
+    reasons <- ifelse(is.na(current[dirty]), "removed", sprintf("changed (%s -> %s)", imports[dirty], current[dirty]))
+    print_message("%s: %d of %d imports from %s no longer match:\n%s", dep, sum(dirty), length(imports), package,
+                  paste0("  ", names(imports)[dirty], " ", reasons, collapse = "\n"))
+    rebuild_one(paste0("r-universe/", universe), dep)
+  }
+  print_message("Packages with imports from %s that still match (%d): %s", package, length(clean), paste(clean, collapse = " "))
+}
+
+abi_hashes <- function(entries){
+  hashes <- vapply(entries, function(x) x$hash, character(1))
+  names(hashes) <- vapply(entries, function(x) x$key, character(1))
+  hashes
 }
 
 #' @export
