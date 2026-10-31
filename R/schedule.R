@@ -56,7 +56,7 @@ trigger_full_rebuilds <- function(builds, rebuild_days, delay = 8){
 
   # Trigger rebuilds with pauzes in between
   for(i in seq_len(nrow(rebuilds))){
-    rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'])
+    rebuild_package(rebuilds[i,'user'], rebuilds[i,'package'], reason = 'monthly rebuild')
     Sys.sleep(delay)
   }
 }
@@ -86,9 +86,9 @@ retry_run <- function(url, max_age = 5){
   })
 }
 
-rebuild_package <- function(universe, pkg){
+rebuild_package <- function(universe, pkg, reason = NULL){
   print_message("Rebuilding %s/%s", basename(universe), pkg)
-  tryCatch(trigger_workflow(repository = paste0('r-universe/', universe), workflow = 'build.yml', inputs = list(package = pkg)), error = function(e){
+  tryCatch(trigger_workflow(repository = paste0('r-universe/', universe), workflow = 'build.yml', inputs = c(list(package = pkg), reason = reason)), error = function(e){
     message(sprintf('ERROR rebuilding %s/%s: %s', basename(universe), pkg, e$message))
   })
 }
