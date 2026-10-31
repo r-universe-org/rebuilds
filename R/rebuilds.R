@@ -455,9 +455,9 @@ package_stats <- function(monorepo){
   git_stat_files(pkgs$path, repo = repo)
 }
 
-rebuild_one <- function(repository, pkg){
+rebuild_one <- function(repository, pkg, reason = NULL){
   cat(sprintf("Rebuilding %s/%s\n", basename(repository), pkg))
-  trigger_workflow(repository = repository, workflow = 'build.yml', inputs = list(package = pkg))
+  trigger_workflow(repository = repository, workflow = 'build.yml', inputs = c(list(package = pkg), reason = reason))
 }
 
 revdep_check <- function(repository, pkg){
@@ -636,7 +636,7 @@ trigger_revdeps <- function(package){
     stop("More than 50 revdeps found. That seems wrong?")
   }
   for(dep in revdeps){
-    rebuild_one(paste0("r-universe/", universe), dep)
+    rebuild_one(paste0("r-universe/", universe), dep, reason = paste("revdep of", package))
   }
 }
 
@@ -658,7 +658,7 @@ trigger_abi_revdeps <- function(package, universe){
     reasons <- c(sprintf("  %s changed", unlist(x$changed)), sprintf("  %s removed", unlist(x$removed)))
     print_message("%s: %d of %d imports from %s no longer match:\n%s", x$package, length(reasons),
                   sum(importers == x$package), package, paste(reasons, collapse = "\n"))
-    rebuild_one(paste0("r-universe/", universe), x$package)
+    rebuild_one(paste0("r-universe/", universe), x$package, reason = paste("revdep of", package))
   }
   dirty <- vapply(summary$dirty, function(x) x$package, character(1))
   clean <- setdiff(sort(unique(importers)), dirty)
